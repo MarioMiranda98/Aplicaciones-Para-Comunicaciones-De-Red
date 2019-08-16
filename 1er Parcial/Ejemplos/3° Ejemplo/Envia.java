@@ -7,9 +7,10 @@ public class Envia {
         try {
             final int PUERTO = 9000;
             String host = "127.0.0.1";
-            Socket cl = new Socket("10.100.69.39", PUERTO);
+            Socket cl = new Socket(host, PUERTO);
             System.out.println("Conexion establecida, mostrando caja de dialogo");
             JFileChooser jf = new JFileChooser();
+            jf.requestFocus();
             int r = jf.showOpenDialog(null);
             if (r == JFileChooser.APPROVE_OPTION) {
                 File f = jf.getSelectedFile();
