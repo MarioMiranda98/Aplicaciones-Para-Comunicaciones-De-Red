@@ -7,7 +7,7 @@ public class Envia {
         try {
             final int PUERTO = 9000;
             String host = "127.0.0.1";
-            Socket cl = new Socket(host, PUERTO);
+            Socket cl = new Socket("10.100.69.39", PUERTO);
             System.out.println("Conexion establecida, mostrando caja de dialogo");
             JFileChooser jf = new JFileChooser();
             int r = jf.showOpenDialog(null);
@@ -22,7 +22,6 @@ public class Envia {
                 int porcentaje = 0;
                 DataOutputStream dos = new DataOutputStream(cl.getOutputStream());
                 DataInputStream dis = new DataInputStream(new FileInputStream(path));
-
                 while (e < tam) {
                     byte[] b = new byte[2000];
                     n = dis.read(b);
