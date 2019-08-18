@@ -21,5 +21,3 @@ class Datos() :
     
     def setV3(self, v3) :
         self.v3 = v3
-
-    #Datos = property(getV1, getV2, getV3, setV1, setV2, setV3)
