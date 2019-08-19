@@ -1,12 +1,10 @@
 import java.net.*;
 import java.io.*;
-import java.lang.instrument.Instrumentation;
 
 public class ClienteO {
     public static void main(String[] args) {
         try {
             String host = "localhost";
-            Instrumentation inst;
             final int PUERTO = 2500;
             Socket cl = new Socket(host, PUERTO);
             System.out.println("Conexion establecida, comienza intercambio de objetos");
