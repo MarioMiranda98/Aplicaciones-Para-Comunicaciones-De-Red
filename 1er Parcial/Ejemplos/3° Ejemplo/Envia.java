@@ -23,6 +23,10 @@ public class Envia {
                 int porcentaje = 0;
                 DataOutputStream dos = new DataOutputStream(cl.getOutputStream());
                 DataInputStream dis = new DataInputStream(new FileInputStream(path));
+                dos.writeUTF(nombre);
+                dos.flush();
+                dos.writeLong(tam);
+                dos.flush();
                 while (e < tam) {
                     byte[] b = new byte[2000];
                     n = dis.read(b);
