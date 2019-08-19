@@ -15,9 +15,10 @@ public class ServidorO {
                 Dato datosRecibidos = (Dato)(ois.readObject());
                 System.out.println("Objeto Recibido\nV1: " + datosRecibidos.getV1() + "\tV2: " + datosRecibidos.getV2() + "\tV3: " + datosRecibidos.getV3());
 
-                System.out.println("Enviando Objeto Recibido");
+                Dato d2 = new Dato(7, 8.0f, "nueve");                
+                System.out.println("Enviando Objeto");
                 ObjectOutputStream oos = new ObjectOutputStream(cl.getOutputStream());
-                oos.writeObject(datosRecibidos);
+                oos.writeObject(d2);
                 oos.flush();
                 ois.close();
                 oos.close();
