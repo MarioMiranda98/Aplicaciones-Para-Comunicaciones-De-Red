@@ -17,19 +17,27 @@ public class Interfaz extends JFrame {
 		panelSuperior = new JPanel();
 		panelInferior = new JPanel();
 		elegirArchivo = new JButton("Elegir archivo");
-		enviarArchivo = new JButton("Enviar");
+        enviarArchivo = new JButton("Enviar");
+        enviarArchivo.setEnabled(false);
         conectar = new JButton("Conectar");
-		estado = new JLabel("Estado: ");
-		porcentaje = new JLabel("Porcentaje: ");
+		estado = new JLabel("Estado: Desconectado");
+		porcentajeE = new JLabel("Porcentaje: ");
         texto = new JTextArea(50, 100);
+        texto.setEditable(false);
+        texto.append("Archivo:\t\tTama\u00F1o:");
         misArchivos = new ArrayList<>();
 
 
 		conectar.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				try {
-					cl = new Socket(HOST, PUERTO);
-				} catch(Exception e1) { e1.printStackTrace(); }
+                    cl = new Socket(HOST, PUERTO);
+                    estado.setText("Estado: Conectado");
+                    enviarArchivo.setEnabled(true);
+				} catch(Exception e1) {
+                    estado.setText("Estado: Desconectado"); 
+                    e1.printStackTrace(); 
+                }
 			}
         });
 
@@ -47,7 +55,7 @@ public class Interfaz extends JFrame {
 
 		panelSuperior.setLayout(new BorderLayout());
 		panelSuperior.add(estado, BorderLayout.NORTH);
-		panelSuperior.add(porcentaje, BorderLayout.CENTER);
+		panelSuperior.add(porcentajeE, BorderLayout.CENTER);
 		panelInferior.add(elegirArchivo);
 		panelInferior.add(enviarArchivo);
         panelInferior.add(conectar);
@@ -68,6 +76,7 @@ public class Interfaz extends JFrame {
         if(r == JFileChooser.APPROVE_OPTION) {
             File f = file.getSelectedFile();
             misArchivos.add(new Archivo(f.getName(), f.length(), f.getAbsolutePath()));
+            texto.append("\n" + f.getName() + "\t\t" + f.length());
         }
     }
 
@@ -95,11 +104,13 @@ public class Interfaz extends JFrame {
                         dos.flush();
                         porcentaje = (int) ((e*100)/a.getTamanio());
                         System.out.print("\rEnviando el " + porcentaje + "%");
+                        porcentajeE.setText("Porcentaje: " + porcentaje + "%");
                     }
                     System.out.println("\nArchivo Enviado");
             }
             misArchivos.clear();
-            enviarArchivo.setEnabled(true);
+            estado.setText("Estado: Desconectado");
+            texto.setText("");
             dis.close();
             dos.close();
             cl.close();
@@ -115,7 +126,7 @@ public class Interfaz extends JFrame {
 	private JPanel panelInferior;
 	private JButton elegirArchivo, enviarArchivo;
 	private JButton conectar;
-	private JLabel estado, porcentaje;
+	private JLabel estado, porcentajeE;
 	private JTextArea texto;
 	final int PUERTO = 9000;
 	final String HOST = "127.0.0.1";
