@@ -19,6 +19,8 @@ public class Interfaz extends JFrame {
 		elegirArchivo = new JButton("Elegir archivo");
         enviarArchivo = new JButton("Enviar");
         enviarArchivo.setEnabled(false);
+        enviarCarpeta = new JButton("Enviar Carpeta");
+        //enviarCarpeta.setEnabled(false);
         conectar = new JButton("Conectar");
 		estado = new JLabel("Estado: Desconectado");
 		porcentajeE = new JLabel("Porcentaje: ");
@@ -53,11 +55,24 @@ public class Interfaz extends JFrame {
             }
         });
 
+        enviarCarpeta.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                directory = new JFileChooser();
+                directory.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+                directory.requestFocus();
+                int r = directory.showOpenDialog(Interfaz.this);
+                if (r == JFileChooser.APPROVE_OPTION) {
+                    carpetas(directory.getSelectedFile(), "" + directory.getCurrentDirectory());
+                }
+            }
+        });
+
 		panelSuperior.setLayout(new BorderLayout());
 		panelSuperior.add(estado, BorderLayout.NORTH);
 		panelSuperior.add(porcentajeE, BorderLayout.CENTER);
 		panelInferior.add(elegirArchivo);
-		panelInferior.add(enviarArchivo);
+        panelInferior.add(enviarArchivo);
+        panelInferior.add(enviarCarpeta);
         panelInferior.add(conectar);
 		panelPrincipal.add(panelSuperior, BorderLayout.NORTH);
 		panelPrincipal.add(texto, BorderLayout.CENTER);
@@ -117,6 +132,21 @@ public class Interfaz extends JFrame {
         } catch(Exception e1) { e1.printStackTrace(); } 
     }
 
+    public void carpetas(File carpeta, String destino) {
+        if(destino.equalsIgnoreCase(""))
+            destino = carpeta.getName();
+        else 
+            destino = destino + "//" + carpeta.getName();
+        
+        for(File f : carpeta.listFiles()) {
+            if(f.isDirectory()) { carpetas(f, destino); }
+            else { 
+                misArchivos.add(new Archivo(f.getName(), f.length(), f.getAbsolutePath())); 
+                texto.append("\n" + f.getName() + "\t\t" + f.length());
+            }
+        }
+    }
+
 	public static void main(String[] args) {
 		new Interfaz();
 	}
@@ -124,7 +154,8 @@ public class Interfaz extends JFrame {
 	private JPanel panelPrincipal;
 	private JPanel panelSuperior;
 	private JPanel panelInferior;
-	private JButton elegirArchivo, enviarArchivo;
+    private JButton elegirArchivo, enviarArchivo;
+    private JButton enviarCarpeta;
 	private JButton conectar;
 	private JLabel estado, porcentajeE;
 	private JTextArea texto;
@@ -132,6 +163,7 @@ public class Interfaz extends JFrame {
 	final String HOST = "127.0.0.1";
     private Socket cl;
     private JFileChooser file;
+    private JFileChooser directory;
     private ArrayList <Archivo> misArchivos;
     private DataOutputStream dos;
     private DataInputStream dis;
