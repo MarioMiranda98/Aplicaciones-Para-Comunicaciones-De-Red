@@ -18,10 +18,9 @@ public class Interfaz extends JFrame {
 		panelInferior = new JPanel();
 		elegirArchivo = new JButton("Elegir archivo");
         enviarArchivo = new JButton("Enviar");
-        enviarArchivo.setEnabled(false);
         enviarCarpeta = new JButton("Enviar Carpeta");
         //enviarCarpeta.setEnabled(false);
-        conectar = new JButton("Conectar");
+        //conectar = new JButton("Conectar");
 		estado = new JLabel("Estado: Desconectado");
 		porcentajeE = new JLabel("Porcentaje: ");
         texto = new JTextArea(50, 100);
@@ -29,19 +28,6 @@ public class Interfaz extends JFrame {
         texto.append("Archivo:\t\tTama\u00F1o:");
         misArchivos = new ArrayList<>();
 
-
-		conectar.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				try {
-                    cl = new Socket(HOST, PUERTO);
-                    estado.setText("Estado: Conectado");
-                    enviarArchivo.setEnabled(true);
-				} catch(Exception e1) {
-                    estado.setText("Estado: Desconectado"); 
-                    e1.printStackTrace(); 
-                }
-			}
-        });
 
         elegirArchivo.addActionListener(new ActionListener(){
             public void actionPerformed(ActionEvent arg0) {
@@ -73,7 +59,7 @@ public class Interfaz extends JFrame {
 		panelInferior.add(elegirArchivo);
         panelInferior.add(enviarArchivo);
         panelInferior.add(enviarCarpeta);
-        panelInferior.add(conectar);
+        //panelInferior.add(conectar);
 		panelPrincipal.add(panelSuperior, BorderLayout.NORTH);
 		panelPrincipal.add(texto, BorderLayout.CENTER);
 		panelPrincipal.add(panelInferior, BorderLayout.SOUTH);
@@ -98,10 +84,10 @@ public class Interfaz extends JFrame {
     public void enviarArchivos() {
         enviarArchivo.setEnabled(false);
         try {
-            dos = new DataOutputStream(cl.getOutputStream());
-            int tam = misArchivos.size();
-            dos.writeInt(tam);
             for(Archivo a : misArchivos) {
+                cl = new Socket(HOST, PUERTO);
+                estado.setText("Estado: Conectado");
+                dos = new DataOutputStream(cl.getOutputStream());
                 System.out.println(a.getNombre() + "," + a.getTamanio() + "," + a.getPath());
                 long e = 0;
                 int n = 0; 
@@ -122,14 +108,17 @@ public class Interfaz extends JFrame {
                         porcentajeE.setText("Porcentaje: " + porcentaje + "%");
                     }
                     System.out.println("\nArchivo Enviado");
+                dis.close();
+                dos.close();
+                cl.close();
             }
             misArchivos.clear();
             estado.setText("Estado: Desconectado");
             texto.setText("");
-            dis.close();
-            dos.close();
-            cl.close();
-        } catch(Exception e1) { e1.printStackTrace(); } 
+        } catch(Exception e1) { 
+            estado.setText("Estado: Desconectado"); 
+            e1.printStackTrace(); 
+         } 
     }
 
     public void carpetas(File carpeta, String destino) {
