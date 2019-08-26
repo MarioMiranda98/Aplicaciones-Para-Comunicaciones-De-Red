@@ -1,8 +1,11 @@
 import javax.swing.*;
-import javax.swing.table.AbstractTableModel;
-import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.table.*;
+import javax.swing.tree.*;
 import java.awt.*;
 import java.awt.event.*;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.util.ArrayList;
 
 public class Interfaz extends JFrame {
     private static final long serialVersionUID = 01L;
@@ -20,7 +23,9 @@ public class Interfaz extends JFrame {
         panelServidorBotones = new JPanel();
         cliente = new JLabel("Cliente");
         servidor = new JLabel("Servidor");
-        tablaCliente = new JTable(new Modelo());
+        tablaCliente = new JTable();
+        modelo = (DefaultTableModel) tablaCliente.getModel();
+        modelo.addColumn("Archivo");
         botonSubir = new JButton("Subir");
         botonBajar = new JButton("Descargar todo");
         elegirArchivo = new JButton("Elegir Archivo");
@@ -29,7 +34,7 @@ public class Interfaz extends JFrame {
         elegirCarpetaServidor = new JButton("Elegir Carpeta");
         raiz = new DefaultMutableTreeNode("./");
         arbol = new JTree(raiz);
-
+        mArchivos = new ArrayList<>();
         //------------------Propiedades componente------------//
         panelPrincipal.setLayout(new GridLayout(1, 1, 5, 5));
         panelCliente.setLayout(new BorderLayout());
@@ -54,11 +59,59 @@ public class Interfaz extends JFrame {
         panelPrincipal.add(panelCliente, BorderLayout.WEST);
         panelPrincipal.add(panelServidor, BorderLayout.EAST);
         add(panelPrincipal);
-        //----------------Añadiendo Paneles--------------------//
+        //----------------Poniendo a la escucha--------------------//
+        elegirArchivo.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent ae) {
+                eleccionArchivo();
+            }
+        });
+
+        elegirCarperta.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent ae) {
+                try {
+                    eleccionCarperta();
+                } catch (FileNotFoundException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+
+        botonSubir.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent ae) {
+                miCliente = new SocketCliente(PUERTO, HOST, mArchivos);
+                miCliente.enviarArchivo("");
+                modelo.setRowCount(0);
+            }
+        });
 
         //---------------Operaciones del JFrame---------------//
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setVisible(true); 
+    }
+
+    public void eleccionArchivo() {
+        JFileChooser jf = new JFileChooser();
+        jf.requestFocus();
+        int r = jf.showOpenDialog(Interfaz.this);
+        if (r == JFileChooser.APPROVE_OPTION) {
+            File f = jf.getSelectedFile();
+            modelo.addRow(new Object[]{ f.getName()});
+            mArchivos.add(new Archivo(f.getName(), f.length(), "", f));
+        }
+    }
+
+    public void eleccionCarperta() throws FileNotFoundException {
+        JFileChooser jf = new JFileChooser();
+        jf.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+        jf.requestFocus();
+        int r = jf.showOpenDialog(Interfaz.this);
+        if (r == JFileChooser.APPROVE_OPTION) {
+            File archivoSeleccionado = jf.getSelectedFile();
+            modelo.addRow(new Object[]{"Carpeta: " + archivoSeleccionado.getName()});
+            modelo.setRowCount(0);
+            miCliente = new SocketCliente(PUERTO, HOST, mArchivos);
+            miCliente.carpetas(archivoSeleccionado, "");
+        }
     }
 
     private JPanel panelPrincipal;
@@ -69,6 +122,7 @@ public class Interfaz extends JFrame {
     private JLabel cliente;
     private JLabel servidor;
     private JTable tablaCliente;
+    private DefaultTableModel modelo;
     private JButton botonSubir;
     private JButton botonBajar;
     private JButton elegirArchivo;
@@ -77,25 +131,8 @@ public class Interfaz extends JFrame {
     private JButton elegirCarpetaServidor;
     private JTree arbol;
     private DefaultMutableTreeNode raiz;
-}
-
-@SuppressWarnings("serial")
-class Modelo extends AbstractTableModel {
-    public int getColumnCount() {
-        return 2;
-    }
-
-    public int getRowCount() {
-        return 0;
-    }
-
-    public Object getValueAt(int arg0, int arg1) {
-        return null;
-    }
-
-    public String getColumnName(int c) {
-        return nombres[c++];
-    }
-
-    private String[] nombres = {"Archivo", "Enviar"};
+    private ArrayList <Archivo> mArchivos;
+    private final int PUERTO = 9000;
+    private final String HOST = "127.0.0.1";
+    private SocketCliente miCliente;
 }
