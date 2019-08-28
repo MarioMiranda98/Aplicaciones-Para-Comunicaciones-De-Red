@@ -27,7 +27,6 @@ public class Interfaz extends JFrame {
         modelo = (DefaultTableModel) tablaCliente.getModel();
         modelo.addColumn("Archivo");
         botonSubir = new JButton("Subir");
-        botonBajar = new JButton("Descargar todo");
         elegirArchivo = new JButton("Elegir Archivo");
         elegirArchivoServidor = new JButton("Elegir Archivo");
         elegirCarperta = new JButton("Elegir Carpeta");
@@ -49,7 +48,6 @@ public class Interfaz extends JFrame {
         panelCliente.add(new JScrollPane(tablaCliente), BorderLayout.CENTER);
         panelCliente.add(panelClienteBotones, BorderLayout.SOUTH);
 
-        panelServidorBotones.add(botonBajar);
         panelServidorBotones.add(elegirArchivoServidor);
         panelServidorBotones.add(elegirCarpetaServidor);
         panelServidor.add(servidor, BorderLayout.NORTH);
@@ -78,8 +76,8 @@ public class Interfaz extends JFrame {
 
         botonSubir.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent ae) {
-                miCliente = new SocketCliente(PUERTO, HOST, mArchivos);
-                miCliente.enviarArchivo("");
+                miCliente = new SocketCliente(PUERTO, HOST);
+                miCliente.enviarArchivo(mArchivos, "");
                 modelo.setRowCount(0);
             }
         });
@@ -87,6 +85,12 @@ public class Interfaz extends JFrame {
         //---------------Operaciones del JFrame---------------//
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setVisible(true); 
+
+        elegirArchivoServidor.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent ae) {
+                eleccionArchivoServidor();
+            }
+        });
     }
 
     public void eleccionArchivo() {
@@ -96,7 +100,19 @@ public class Interfaz extends JFrame {
         if (r == JFileChooser.APPROVE_OPTION) {
             File f = jf.getSelectedFile();
             modelo.addRow(new Object[]{ f.getName()});
-            mArchivos.add(new Archivo(f.getName(), f.length(), "", f));
+            mArchivos.add(new Archivo(f.getName(), f.length(), f.getAbsolutePath()));
+        }
+    }
+
+    public void eleccionArchivoServidor() {
+        JFileChooser jf = new JFileChooser("./ArchivosServidor/");
+        jf.requestFocus();
+        int r = jf.showOpenDialog(Interfaz.this);
+        if (r == JFileChooser.APPROVE_OPTION) {
+            File f = jf.getSelectedFile();
+            Archivo a = new Archivo(f.getName(), f.length(), f.getAbsolutePath());
+            miCliente = new SocketCliente(PUERTO, HOST);
+            miCliente.peticionArchivo(a);
         }
     }
 
@@ -109,8 +125,8 @@ public class Interfaz extends JFrame {
             File archivoSeleccionado = jf.getSelectedFile();
             modelo.addRow(new Object[]{"Carpeta: " + archivoSeleccionado.getName()});
             modelo.setRowCount(0);
-            miCliente = new SocketCliente(PUERTO, HOST, mArchivos);
-            miCliente.carpetas(archivoSeleccionado, "");
+            miCliente = new SocketCliente(PUERTO, HOST);
+            miCliente.carpetas(archivoSeleccionado, "", mArchivos);
         }
     }
 
@@ -124,7 +140,6 @@ public class Interfaz extends JFrame {
     private JTable tablaCliente;
     private DefaultTableModel modelo;
     private JButton botonSubir;
-    private JButton botonBajar;
     private JButton elegirArchivo;
     private JButton elegirArchivoServidor;
     private JButton elegirCarperta;
