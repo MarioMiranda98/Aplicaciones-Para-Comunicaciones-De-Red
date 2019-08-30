@@ -64,7 +64,7 @@ public class Cliente {
         enviarArchivo(misArchivos ,destino);
     }
 
-    public void peticionArchivo(Archivo archivoPedido) {
+    public void peticionArchivo(Archivo archivoPedido, String destino) {
         try {
             cliente = new Socket(this.host, this.puerto);
             dos = new DataOutputStream(cliente.getOutputStream());
@@ -77,6 +77,7 @@ public class Cliente {
             dos.writeUTF(archivoPedido.getPath());
             dos.flush();
 
+            System.out.println(destino);
             dis = new DataInputStream(cliente.getInputStream());
             String nombre = dis.readUTF();
             long tam = dis.readLong();
@@ -85,7 +86,7 @@ public class Cliente {
             long r = 0;
             int n = 0;
             int porcentaje = 0;
-            DataOutputStream archivo = new DataOutputStream(new FileOutputStream("./ArchivosCliente/" + nombre));
+            DataOutputStream archivo = new DataOutputStream(new FileOutputStream(destino + "/" + nombre));
 
             while(r < tam) {
                 byte[] b = new byte[2000];

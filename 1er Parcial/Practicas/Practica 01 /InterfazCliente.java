@@ -67,10 +67,17 @@ public class InterfazCliente extends JFrame {
                 jf.requestFocus();
                 int r = jf.showOpenDialog(InterfazCliente.this);
                 if (r == JFileChooser.APPROVE_OPTION) {
-                    File f = jf.getSelectedFile();
-                    Archivo a = new Archivo(f.getName(), f.length(), f.getAbsolutePath(), f);
-                    miCliente = new Cliente(HOST, PUERTO);
-                    miCliente.peticionArchivo(a);
+                    JFileChooser jf2 = new JFileChooser();
+                    jf2.requestFocus();
+                    jf2.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+                    int r2 = jf2.showOpenDialog(InterfazCliente.this);
+                    if(r2 == JFileChooser.APPROVE_OPTION) {
+                        File f = jf.getSelectedFile();
+                        File f2 = jf2.getSelectedFile();
+                        Archivo a = new Archivo(f.getName(), f.length(), f.getAbsolutePath(), f);
+                        miCliente = new Cliente(HOST, PUERTO);
+                        miCliente.peticionArchivo(a, f2.getAbsolutePath());
+                    }
                 }
             }
         });
