@@ -12,44 +12,60 @@ public class ClienteDatagrama {
             cliente = new DatagramSocket();
             System.out.println("Cliente iniciado en el puerto " + cliente.getLocalPort());
             DataInputStream dis = new DataInputStream(new FileInputStream(file));
-            long tamanio = file.length();
+            long tamanio = dis.available();
             long enviado = 0;
             int n = 0;
             int i = 0;
             while (enviado < tamanio) {
-                byte[] buf = new byte[datagrama];
-                n = dis.read(buf);
-                byte[] buf2 = new byte[n];
-                System.arraycopy(buf, 0, buf2, 0, n);
-                Datos datos = new Datos(file.getName(), n, destino, ++i, buf2);
-                enviandoDatagrama(datos, puerto);
+                Datos datos = new Datos(file.getName(), file.length(), destino, ++i);   
+                ByteArrayOutputStream baos = new ByteArrayOutputStream(6400);
+                ObjectOutputStream oos = new ObjectOutputStream(new BufferedOutputStream(baos));
+                oos.flush();
+                byte[] b = new byte[4000];
+                n = dis.read(b);
+                byte[] b2 = new byte[n];
+                System.arraycopy(b, 0, b2, 0, n);
+                datos.setDatos(b2); 
+                datos.setBytesEnviados(n);
+                oos.writeObject(datos);
+                oos.flush();
+                byte[] d = baos.toByteArray();
+                DatagramPacket paqueteEnvio = new DatagramPacket(d, d.length, InetAddress.getByName(host), puerto);
+                cliente.send(paqueteEnvio);
                 try {
-                    Thread.sleep(5000);
-                } catch(Exception e) { e.printStackTrace(); }
+                    Thread.sleep(500);
+                }catch (Exception e) { e.printStackTrace(); }
+                System.out.println("Numero paquete:" + i);
                 enviado += n;
+                oos.close();
+                baos.close();            
             }
-            byte[] b = {0x02};
-            Datos d2 = new Datos(file.getName(), b.length, destino, -1, b);
-            enviandoDatagrama(d2, puerto);
+            byte[] bFinal = {0x02};
+            Datos paqueteFinal = new Datos(file.getName(), file.length(), destino, 0);
+           
+            paqueteFinal.setDatos(bFinal);
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            ObjectOutputStream oos = new ObjectOutputStream(baos);
+
+            oos.writeObject(paqueteFinal);
+            oos.flush();
+
+            byte[] mnsj = baos.toByteArray();
+
+            DatagramPacket dp = new DatagramPacket(mnsj,mnsj.length,InetAddress.getByName(""),puerto);
+            cliente.send(dp);
+
+            System.out.println("Archivo Enviado");
+            oos.close();
+            baos.close();
+            cliente.close();
+            dis.close();
         } catch(Exception e) {
             e.printStackTrace();
         }//try/catch
     }
 
-    private void enviandoDatagrama(Datos misDatos, int puerto) {
-        try {
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            ObjectOutputStream oos = new ObjectOutputStream(baos);
-            oos.writeObject(misDatos);
-            oos.flush();
-            byte[] mensaje = baos.toByteArray();
-            DatagramPacket paquete = new DatagramPacket(mensaje, mensaje.length, InetAddress.getByName(host), puerto);
-            cliente.send(paquete);
-        }catch(Exception e) { e.printStackTrace(); }
-    }
-
    private int puerto;
    private String host;
-   private int datagrama = 60000;
    private DatagramSocket cliente;
 }
