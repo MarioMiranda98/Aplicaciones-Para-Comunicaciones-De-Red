@@ -16,7 +16,7 @@ public class GestionProductosServidor {
 
     private Producto[] misProductos;
     private int[] id = {1,2,3,4,5,6,7,8,9,10};
-    private String[] nombre = {"Tazas", "Leche", "Audifonos", "Controles", " Juguetes", "Tortillas", "Gorras", "Celulares", "Pan", "Cafe"};
+    private String[] nombre = {"Tazas", "Leche", "Audifonos", "Controles", "Juguetes", "Tortillas", "Gorras", "Celulares", "Pan", "Cafe"};
     private double[] precio = {25.50, 20.0, 850.0, 450.25, 360.95, 15.25, 200.56, 1500.58, 6.70, 29.99};
     private String[] descripcion = {
         "Tazas chidas",

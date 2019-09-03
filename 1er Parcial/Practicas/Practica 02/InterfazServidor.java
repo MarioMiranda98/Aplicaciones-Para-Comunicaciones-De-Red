@@ -12,7 +12,10 @@ public class InterfazServidor extends JFrame {
 
         //Creacion de componentes
         panelPrincipal = new JPanel();
+        panelInferior = new JPanel();
         cargarProductos = new JButton("Cargar Productos");
+        online = new JButton("Online");
+        online.setVisible(false);
         servidor = new JLabel("Servidor");
         tablaProductos = new JTable();
         modelo = (DefaultTableModel) tablaProductos.getModel();
@@ -28,21 +31,38 @@ public class InterfazServidor extends JFrame {
         cargarProductos.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 misProductos = productos.generarProductos();
-                
+                online.setVisible(true);
+                cargarProductos.setVisible(false);
+                dibujaProductos(misProductos);
                 /*for(int i = 0; i < misProductos.length; i += 1)
                     System.out.println(misProductos[i].getID() +" " + misProductos[i].getExistencias() + " " + misProductos[i].getDescripcion() + " " + misProductos[i].getImagen());*/
             }
         });
+
+        online.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                miServidor = new Servidor(PUERTO, misProductos);
+                miServidor.online();
+            }
+        });
         
         //Añadiendo componentes
+        panelInferior.add(cargarProductos);
+        panelInferior.add(online);
         panelPrincipal.add(servidor, BorderLayout.NORTH);
         panelPrincipal.add(new JScrollPane(tablaProductos), BorderLayout.CENTER);
-        panelPrincipal.add(cargarProductos, BorderLayout.SOUTH);
+        panelPrincipal.add(panelInferior, BorderLayout.SOUTH);
         add(panelPrincipal);
 
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setVisible(true);
     }//Constructor
+
+    public void dibujaProductos(Producto[] misProductos) {
+        for(Producto p : misProductos) {
+            modelo.addRow(new Object[] {p.getNombre(), p.getExistencias()});
+        }
+    }//dibujaProductos
 
     public static void main(String[] args) {
         new InterfazServidor();
@@ -50,10 +70,14 @@ public class InterfazServidor extends JFrame {
 
     //Bloque de instancias
     private JPanel panelPrincipal;
+    private JPanel panelInferior;
     private DefaultTableModel modelo;
     private JTable tablaProductos;
     private JButton cargarProductos;
+    private JButton online;
     private JLabel servidor;
     private GestionProductosServidor productos;
     private Producto[] misProductos;
+    private final int PUERTO = 9999;
+    private Servidor miServidor;
 }//clase
