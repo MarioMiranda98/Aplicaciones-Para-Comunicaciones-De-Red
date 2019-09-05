@@ -1,5 +1,6 @@
 import java.io.*;
 import java.net.*;
+import java.util.*;
 
 public class Cliente {
     public Cliente(int puerto, String host) {
@@ -10,13 +11,14 @@ public class Cliente {
     public Producto[] recibirCatalogo() {
         try {
             cliente = new Socket(this.host, this.puerto);
-            DataOutputStream dos = new DataOutputStream(cliente.getOutputStream());
-            dos.writeInt(1);
-            dos.flush();
+            Last l = new Last(1, null);
+            ObjectOutputStream oos = new ObjectOutputStream(cliente.getOutputStream());
+            oos.writeObject(l);
+            oos.flush();
             ObjectInputStream ois = new ObjectInputStream(cliente.getInputStream());
             misProductos = (Producto[]) ois.readObject();
             ois.close();
-            dos.close();
+            oos.close();
 
             for(Producto p : misProductos)
                 System.out.println(p.getNombre() + "," + p.getExistencias());
@@ -27,6 +29,20 @@ public class Cliente {
             return null;
         }//try/catch
     }//recibirCatalogo
+
+    public void hacerCompra(ArrayList<Producto> productosFinal) {
+        try {
+            cliente = new Socket(this.host, this.puerto);
+            Last l = new Last(2, productosFinal);
+            ObjectOutputStream oos = new ObjectOutputStream(cliente.getOutputStream());
+
+            oos.writeObject(l);
+            oos.flush();
+
+            oos.close();
+            cliente.close();
+        } catch(Exception e) { e.printStackTrace(); }
+    }//hacerCompra
 
     private int puerto;
     private String host;

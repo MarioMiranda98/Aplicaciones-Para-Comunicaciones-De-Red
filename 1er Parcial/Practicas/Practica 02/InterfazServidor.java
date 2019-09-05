@@ -5,12 +5,13 @@ import javax.swing.table.*;
 
 public class InterfazServidor extends JFrame {
     private static final long serialVersionUID = 2L;
+
     public InterfazServidor() {
         setBounds(550, 150, 350, 350);
         setTitle("Practica 2: Servidor");
         setResizable(false);
 
-        //Creacion de componentes
+        // Creacion de componentes
         panelPrincipal = new JPanel();
         panelInferior = new JPanel();
         cargarProductos = new JButton("Cargar Productos");
@@ -24,25 +25,33 @@ public class InterfazServidor extends JFrame {
         misProductos = new Producto[10];
         productos = new GestionProductosServidor(misProductos);
 
-        //Propiedades de los componentes
+        // Propiedades de los componentes
         panelPrincipal.setLayout(new BorderLayout(5, 5));
 
-        //Colocando a la escucha
+        // Colocando a la escucha
         cargarProductos.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 misProductos = productos.generarProductos();
                 online.setVisible(true);
                 cargarProductos.setVisible(false);
                 dibujaProductos(misProductos);
-                /*for(int i = 0; i < misProductos.length; i += 1)
-                    System.out.println(misProductos[i].getID() +" " + misProductos[i].getExistencias() + " " + misProductos[i].getDescripcion() + " " + misProductos[i].getImagen());*/
+                /*
+                 * for(int i = 0; i < misProductos.length; i += 1)
+                 * System.out.println(misProductos[i].getID() +" " +
+                 * misProductos[i].getExistencias() + " " + misProductos[i].getDescripcion() +
+                 * " " + misProductos[i].getImagen());
+                 */
             }
         });
 
         online.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 miServidor = new Servidor(PUERTO, misProductos);
-                miServidor.online();
+                try {
+                    miServidor.online();
+                } catch (ClassNotFoundException e1) {
+                    e1.printStackTrace();
+                }
             }
         });
         

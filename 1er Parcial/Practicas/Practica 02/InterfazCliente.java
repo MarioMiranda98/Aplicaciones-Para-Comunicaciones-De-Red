@@ -1,6 +1,7 @@
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
+import java.util.*;
 
 public class InterfazCliente extends JFrame{
     private static final long serialVersionUID = 1L;
@@ -28,6 +29,7 @@ public class InterfazCliente extends JFrame{
         precio = new JLabel("$");
         existencia = new JLabel("");
         descripcion = new JLabel("");
+        palCarrito = new ArrayList<>();
 
         //Colocando a la escucha
         pedirCatalogo.addActionListener(new ActionListener() {
@@ -65,6 +67,30 @@ public class InterfazCliente extends JFrame{
                 } else {
                     botonAnterior.setEnabled(false);
                 }
+            }
+        });
+
+        agregarCarrito.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                String tmp = nombre.getText();
+                String busc = tmp.substring(8, tmp.length());
+                //System.out.println(busc);  
+                for (Producto p : misProductos) {
+                    if(busc.equalsIgnoreCase(p.getNombre())) {
+                        palCarrito.add(p);
+                        break;
+                    }
+                }
+                /*for(Producto p : palCarrito) 
+                    System.out.println(p.getNombre());*/
+            }
+        });
+
+        verCarrito.addActionListener(new ActionListener(){
+            public void actionPerformed(ActionEvent arg0) {
+                miCarrito = new Carrito(palCarrito);
+                miCarrito.crearCarrito();
+                miCarrito.setVisible(true);
             }
         });
 
@@ -125,4 +151,6 @@ public class InterfazCliente extends JFrame{
     private Producto[] misProductos;
     private JLabel imagen, nombre, precio, existencia, descripcion;
     private int contador = 0;
+    private ArrayList <Producto> palCarrito;
+    private Carrito miCarrito;
 }//Clase 
