@@ -119,6 +119,7 @@ public class Interfaz extends JFrame {
             estado.setText("Estado: Desconectado"); 
             e1.printStackTrace(); 
          } 
+        enviarArchivo.setEnabled(true);
     }
 
     public void carpetas(File carpeta, String destino) {

@@ -1,7 +1,6 @@
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
-import java.util.*;
 
 public class InterfazCliente extends JFrame{
     private static final long serialVersionUID = 1L;
@@ -26,10 +25,13 @@ public class InterfazCliente extends JFrame{
         cliente = new JLabel("Productos");
         imagen = new JLabel("");
         nombre = new JLabel("");
+        id = new JLabel("");
         precio = new JLabel("$");
         existencia = new JLabel("");
         descripcion = new JLabel("");
-        palCarrito = new ArrayList<>();
+        texto = new JTextField(4);
+        miCarrito = new Carrito();
+        i = 0;
 
         //Colocando a la escucha
         pedirCatalogo.addActionListener(new ActionListener() {
@@ -72,24 +74,22 @@ public class InterfazCliente extends JFrame{
 
         agregarCarrito.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                String tmp = nombre.getText();
-                String busc = tmp.substring(8, tmp.length());
-                //System.out.println(busc);  
-                for (Producto p : misProductos) {
-                    if(busc.equalsIgnoreCase(p.getNombre())) {
-                        palCarrito.add(p);
-                        break;
-                    }
+                cantidad = Integer.parseInt(texto.getText());
+                int ids = Integer.parseInt(id.getText().substring(4));
+                if(cantidad > misProductos[ids - 1].getExistencias()) {
+                    JOptionPane.showMessageDialog(InterfazCliente.this, "No hay suficiente cantidad");
+                } else {
+                    misProductos[ids - 1].setExistencias(misProductos[ids - 1].getExistencias() - cantidad);
+                    misProductos[ids - 1].setCantidad(misProductos[ids - 1].getCantidad() + cantidad);
+                    //System.out.println(misProductos[ids - 1].getNombre() + " : " + misProductos[ids - 1].getExistencias());
+                    existencia.setText("Existencias: " + misProductos[ids - 1].getExistencias());
+                    miCarrito.crearCarrito(misProductos[ids - 1], ++i);
                 }
-                /*for(Producto p : palCarrito) 
-                    System.out.println(p.getNombre());*/
             }
         });
 
         verCarrito.addActionListener(new ActionListener(){
             public void actionPerformed(ActionEvent arg0) {
-                miCarrito = new Carrito(palCarrito);
-                miCarrito.crearCarrito();
                 miCarrito.setVisible(true);
             }
         });
@@ -100,10 +100,13 @@ public class InterfazCliente extends JFrame{
         panelCentralCentral.setLayout(new BoxLayout(this.panelCentralCentral, BoxLayout.Y_AXIS));
 
         //Adicion de los componentes
+        panelCentralCentral.add(id);
         panelCentralCentral.add(nombre);
         panelCentralCentral.add(precio);
         panelCentralCentral.add(existencia);
         panelCentralCentral.add(descripcion);
+        panelCentralCentral.add(new JLabel("Cantidad"));
+        panelCentralCentral.add(texto);
         panelCentral.add(imagen, BorderLayout.NORTH);
         panelCentral.add(panelCentralCentral, BorderLayout.NORTH);
         panelInferior.add(pedirCatalogo);
@@ -122,6 +125,7 @@ public class InterfazCliente extends JFrame{
     }//Constructor
 
     private void dibujo(Producto producto) {
+        id.setText("ID: " + producto.getID());
         imagen.setText(producto.getImagen());
         nombre.setText("Nombre: " + producto.getNombre());
         precio.setText("$" + producto.getPrecio());
@@ -145,12 +149,15 @@ public class InterfazCliente extends JFrame{
     private JButton verCarrito;
     private JButton pedirCatalogo;
     private JLabel cliente;
+    private JLabel id;
     private final int PUERTO = 9999;
     private final String HOST = "127.0.0.1";
     private Cliente miCliente;
     private Producto[] misProductos;
     private JLabel imagen, nombre, precio, existencia, descripcion;
     private int contador = 0;
-    private ArrayList <Producto> palCarrito;
+    private int i = 0;
     private Carrito miCarrito;
+    private JTextField texto;
+    private int cantidad;
 }//Clase 

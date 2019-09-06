@@ -39,8 +39,18 @@ public class Cliente {
             oos.writeObject(l);
             oos.flush();
 
+            ObjectInputStream ois = new ObjectInputStream(cliente.getInputStream());
+            Ticket t = (Ticket) ois.readObject();
+
+            //System.out.println(t.getPrecio());
+
+            ois.close();
             oos.close();
             cliente.close();
+
+            intTicket = new InterfazTicket();
+            intTicket.crear(t);
+            intTicket.setVisible(true);
         } catch(Exception e) { e.printStackTrace(); }
     }//hacerCompra
 
@@ -48,4 +58,5 @@ public class Cliente {
     private String host;
     private Producto[] misProductos;
     private Socket cliente;
+    private InterfazTicket intTicket;
 }
