@@ -74,18 +74,27 @@ public class InterfazCliente extends JFrame{
 
         agregarCarrito.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
+                if(texto.getText().equals("")){
+                    JOptionPane.showMessageDialog(InterfazCliente.this, "Campo Vacio");
+                }
+                else {
                 cantidad = Integer.parseInt(texto.getText());
                 int ids = Integer.parseInt(id.getText().substring(4));
                 if(cantidad > misProductos[ids - 1].getExistencias()) {
                     JOptionPane.showMessageDialog(InterfazCliente.this, "No hay suficiente cantidad");
-                } else {
+                } else if(cantidad <= 0) {
+                    JOptionPane.showMessageDialog(InterfazCliente.this, "Cantidad No Valida");
+                }
+                else {
                     misProductos[ids - 1].setExistencias(misProductos[ids - 1].getExistencias() - cantidad);
                     misProductos[ids - 1].setCantidad(misProductos[ids - 1].getCantidad() + cantidad);
                     //System.out.println(misProductos[ids - 1].getNombre() + " : " + misProductos[ids - 1].getExistencias());
                     existencia.setText("Existencias: " + misProductos[ids - 1].getExistencias());
                     miCarrito.crearCarrito(misProductos[ids - 1], ++i);
                 }
+                texto.setText("");
             }
+        }
         });
 
         verCarrito.addActionListener(new ActionListener(){
