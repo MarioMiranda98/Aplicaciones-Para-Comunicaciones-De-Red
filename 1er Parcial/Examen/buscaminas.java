@@ -1,0 +1,239 @@
+import java.awt.*;
+import javax.swing.*;
+import java.awt.event.*;
+
+public class buscaminas extends JFrame /*implements ActionListener */{
+	//	Atributos
+	JButton botones [][];
+	int matrizMinas [][];
+    //	Cajas de texto
+    JTextField txtMinas=new JTextField(3);
+    JTextField txtTiempo=new JTextField(3);
+    //	Etiquetas
+    JLabel lMinas=new JLabel("Minas restantes:");
+    JLabel lTiempo=new JLabel("Tiempo transcurrido:");
+    
+	//	Imagenes de minas
+	ImageIcon imagenesMinas []=new ImageIcon [12];
+	//	Dimencion
+	int filas,columnas;
+	int totalMinas;
+	int casillas=filas*columnas-totalMinas;
+	
+	//	Clase del tiempo
+	Tiempo tp;
+	
+	buscaminas (int filas, int columnas, int totalMinas){
+
+		botones=new JButton [filas][columnas];
+		matrizMinas=new int [filas][columnas];
+		//	Cargar Imágenes
+		for(int i=0;i<12;i++)
+			imagenesMinas[i]=new ImageIcon(i+".jpg");
+                
+		//	Panel Superior
+		JPanel panelSup=new JPanel();
+		panelSup.add(lMinas);
+		panelSup.add(txtMinas);
+		panelSup.add(lTiempo);
+		panelSup.add(txtTiempo);
+		add(panelSup,"North");
+		txtMinas.setEditable(false);
+		txtTiempo.setEditable(false);
+		txtMinas.setText(Integer.toString(casillas));
+		
+		//	Panel de los botones
+		JPanel panelMedio=new JPanel(new GridLayout(filas,columnas));
+		//	Crear y colocar botones
+		for(int i=0;i<filas;i++)
+			for(int j=0;j<columnas;j++)
+				{
+					//	Crear boton
+					botones [i][j]=new JButton();
+					//	Colocar en el panel
+					panelMedio.add(botones[i][j]);
+					//	Action Listener
+					botones[i][j].addActionListener(new ActionListener(){
+						public void actionPerformed(ActionEvent ae){
+							for(int i=0;i<filas;i++)
+								for(int j=0;j<columnas;j++)
+								{
+									if(ae.getSource()==botones[i][j] && botones[i][j].getIcon()==null && botones[i][j].getBackground()!=Color.WHITE)
+									{
+										botones[i][j].setBackground(Color.WHITE);
+    					                                    if(matrizMinas[i][j]==1){
+    					                                    boom(filas,columnas, totalMinas);
+    					                                    }
+    					                                    else
+    					                                    {
+															pulsarVacio(filas,columnas,totalMinas,i,j);
+    					                                    }
+									}
+								}
+						}
+					});
+				}
+		this.add(panelMedio,"Center");	
+		colocarMinas(filas,columnas,totalMinas);
+        //	Propiedades de la ventana
+        
+        //	Comenzar Tiempo
+        tp= new Tiempo(this);
+        tp.start();
+        
+	    setTitle("Buscaminas");	
+	    setResizable(true);
+	    setSize(900,600);
+		setVisible(true);
+	}
+	void colocarMinas(int filas, int columnas, int minas)
+	{
+		System.out.println("Colocando Minas... \n");
+		for(int i=0;i<minas;i++)
+		{
+		//	Coordenadas
+		int x,y=0;
+		double x1,y1=0;
+		
+		/*	Leyenda de matrizMinas
+		 *	1 Existe Mina
+		 *	0 No existe Mina
+		 */
+			//Colocar mina aleatoria
+			do
+			{
+             //Generar posiciones aleatorias
+             x1=Math.random()*filas;
+		 	 y1=Math.random()*columnas;
+		 	 x=(int)x1;
+		 	 y=(int)y1;	
+			}
+			while(matrizMinas[x][y]!=0);
+			matrizMinas[x][y]=1; //	Poner mina
+		}
+      //	Visualizar Tablero de minas.
+	  for(int i=0;i<filas;i++)
+	  {
+	  	System.out.println("");
+	  	for(int j=0;j<columnas;j++)
+	  		System.out.print(" "+matrizMinas[i][j]);
+	  }
+
+	}
+	
+	public static void main(String []args){
+		new buscaminas(9,9,10);
+	}
+
+	void pulsarVacio(int filas, int columnas,int totalMinas, int i, int j)
+	{
+		//	Al pulsar en una zona vaciá
+		casillas--;
+        txtMinas.setText(Integer.toString(casillas));
+        botones[i][j].setText(Integer.toString(minasCerca(filas,columnas,i,j))); //Cuantas Minas cerca
+        if(casillas==0)
+        	ganar(filas, columnas,totalMinas);
+	}
+	
+	void volverEmpezar(int filas, int columnas,int totalMinas)
+	{
+		//	Volver al estado inicial
+		for(int i=0;i<filas;i++)
+			for(int j=0;j<columnas;j++)
+			{
+				matrizMinas[i][j]=0;
+				botones[i][j].setText("");
+				botones[i][j].setBackground(null);
+				botones[i][j].setIcon(null);
+			}
+		colocarMinas(filas, columnas, totalMinas);
+		casillas=filas*columnas-totalMinas;
+		txtMinas.setText(Integer.toString(casillas));
+		tp= new Tiempo(this);
+        tp.start();
+	}
+	
+	void ganar(int filas, int columnas, int totalMinas)
+	{
+		//	Al ganar la partida
+		tp.stop(); //	parar el tiempo
+		//tp.interrupt();
+		JOptionPane.showMessageDialog(this,"Has ganado. Tu tiempo es de: "+txtTiempo.getText());
+		volverEmpezar(filas, columnas, totalMinas);	
+	}
+	
+	void boom(int filas, int columnas, int totalMinas)
+	{
+	//	Al perder la partida
+	tp.stop(); //	parar el tiempo
+	//tp.interrupt();
+	for(int i=0;i<filas;i++)
+		for(int j=0;j<columnas;j++)
+		{
+		if(matrizMinas[i][j]==1)
+			{
+			//	Imagen aleatoria de las minas
+			double y1=Math.random()*12;
+			int y=(int)y1;	
+			botones[i][j].setIcon(imagenesMinas[y]);
+			}
+		}
+		JOptionPane.showMessageDialog(this,"Boom!!! Has perdido.");
+		volverEmpezar(filas,columnas,totalMinas);
+	}
+	
+	int minasCerca(int filas, int columnas, int x,int y)
+	{
+			/*	
+			 *	x Coordenada filas
+			 *	y Coordenada columnas
+			 *
+			 *	numeroMinas: devuelve el número de minas de la posición
+			 */
+			 
+            int numeroMinas=0;
+            for(int i=y-1;i<=y+1;i++){
+            	//En horizontal
+                if(i>-1 && i<filas){
+	                if(matrizMinas[x][i]==1){
+	             		numeroMinas++;
+	                }
+                }
+            }
+            //	En vertical
+                for(int j=x-1;j<=x+1;j++){
+	                		if(j>-1 && j<columnas)
+	                			if(matrizMinas[j][y]==1){
+	                			numeroMinas++;
+	                			}
+	                	}
+	        //	En diagonal
+	        //	Posición de la esquina superior izquierda
+	        int x1=x;
+	        int y1=y;
+	        x1--;
+	        y1--;
+	        	for(int i=x1;i<x1+3;i++)
+	        		{
+	        			if(i>-1 && i<filas && y1>-1 && y1<columnas)
+	        			 if(matrizMinas[i][y1]==1){
+	             		numeroMinas++;
+	                	}
+	                	y1++;
+	        		}
+	        //	Posición de la esquina superior derecha
+	        x1=x;
+	        y1=y;
+	        x1--;
+	        y1++;
+	        	for(int i=x1;i<x1+3;i++)
+	        		{
+	        			if(i>-1 && i<filas && y1>-1 && y1<columnas)
+	        			 if(matrizMinas[i][y1]==1){
+	             		numeroMinas++;
+	                	}
+	                	y1--;
+	        		}
+            return numeroMinas;
+	}
+}
