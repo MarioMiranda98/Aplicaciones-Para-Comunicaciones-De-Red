@@ -15,22 +15,25 @@ public class buscaminas extends JFrame /*implements ActionListener */{
     
 	//	Imagenes de minas
 	ImageIcon imagenesMinas []=new ImageIcon [12];
+	ImageIcon imagenBandera; 
 	//	Dimencion
 	int filas,columnas;
 	int totalMinas;
+	int totalBanderas;
 	int casillas=filas*columnas-totalMinas;
+	//int i, j;
 	
 	//	Clase del tiempo
 	Tiempo tp;
 	
 	buscaminas (int filas, int columnas, int totalMinas){
-
+		totalBanderas = totalMinas;
 		botones=new JButton [filas][columnas];
 		matrizMinas=new int [filas][columnas];
 		//	Cargar Imágenes
 		for(int i=0;i<12;i++)
 			imagenesMinas[i]=new ImageIcon(i+".jpg");
-                
+            imagenBandera = new ImageIcon("gay.jpeg");
 		//	Panel Superior
 		JPanel panelSup=new JPanel();
 		panelSup.add(lMinas);
@@ -53,8 +56,22 @@ public class buscaminas extends JFrame /*implements ActionListener */{
 					//	Colocar en el panel
 					panelMedio.add(botones[i][j]);
 					//	Action Listener
-					botones[i][j].addActionListener(new ActionListener(){
-						public void actionPerformed(ActionEvent ae){
+					botones[i][j].addMouseListener(new MouseListener(){
+						@Override
+       					public void mouseReleased(MouseEvent e) {}
+
+        				@Override
+						public void mousePressed(MouseEvent e) {}
+
+        				@Override
+        				public void mouseExited(MouseEvent e) {}
+
+        				@Override
+       				 	public void mouseEntered(MouseEvent e) {}
+       				 	
+						@Override
+						public void mouseClicked(MouseEvent ae){
+							if(ae.getButton() == MouseEvent.BUTTON1) {
 							for(int i=0;i<filas;i++)
 								for(int j=0;j<columnas;j++)
 								{
@@ -67,11 +84,25 @@ public class buscaminas extends JFrame /*implements ActionListener */{
     					                                    else
     					                                    {
 															pulsarVacio(filas,columnas,totalMinas,i,j);
+															destapa(i, j, filas, columnas);
     					                                    }
-									}
+									}	
+	
 								}
+
+							} else if(ae.getButton() == MouseEvent.BUTTON3) {
+								for(int i=0;i<filas;i++)
+								for(int j=0;j<columnas;j++)
+								{
+								if(ae.getSource()==botones[i][j] && botones[i][j].getBackground()!=Color.WHITE)
+									{
+											colocarBandera(i,j);
+								}
+								}
+							}
 						}
 					});
+
 				}
 		this.add(panelMedio,"Center");	
 		colocarMinas(filas,columnas,totalMinas);
@@ -86,6 +117,48 @@ public class buscaminas extends JFrame /*implements ActionListener */{
 	    setSize(900,600);
 		setVisible(true);
 	}
+
+	void destapa(int i, int j, int filas, int columnas) {
+
+        if(i == -1 || j == -1 || botones[i][j].getBackground() != Color.WHITE) {
+			if(matrizMinas[i][j] == 1 || botones[i][j].getBackground() == Color.WHITE || botones[i][j].getIcon() != null) {
+				return;
+			}else {
+				botones[i][j].setBackground(Color.WHITE);
+				casillas--;
+				txtMinas.setText(Integer.toString(casillas));
+        		botones[i][j].setText(Integer.toString(minasCerca(filas,columnas,i,j)));
+				System.out.println(i + "," + j);
+				return;
+			}
+		}
+		
+		if (i > 0) {
+            destapa(i - 1, j, filas, columnas);
+        }
+        if (j > 0) {
+            destapa(i, j - 1, filas, columnas);
+        }
+        if (j != columnas - 1) {
+            destapa(i, j + 1, filas, columnas);
+        }
+        if (i != filas - 1) {
+            destapa(i + 1, j, filas, columnas);
+        }
+        if (i > 0 && j > 0) {
+            destapa(i - 1, j - 1, filas, columnas);
+        }
+        if (j != columnas - 1 && i != filas - 1) {
+            destapa(i + 1, j + 1, filas, columnas);
+        }
+        if (j != columnas - 1 && i > 0) {
+            destapa(i - 1, j + 1, filas, columnas);
+        }
+        if (i != filas - 1 && j > 0) {
+            destapa(i + 1, j - 1, filas, columnas);
+        }
+    }
+
 	void colocarMinas(int filas, int columnas, int minas)
 	{
 		System.out.println("Colocando Minas... \n");
@@ -121,8 +194,20 @@ public class buscaminas extends JFrame /*implements ActionListener */{
 
 	}
 	
-	public static void main(String []args){
+	/*public static void main(String []args){
 		new buscaminas(9,9,10);
+	}*/
+
+	void colocarBandera(int i, int j) 
+	{
+		if(botones[i][j].getIcon() == null) {
+			botones[i][j].setIcon(imagenBandera);
+			totalBanderas--;
+		}
+		else { 
+			totalBanderas++;
+			botones[i][j].setIcon(null);
+		}
 	}
 
 	void pulsarVacio(int filas, int columnas,int totalMinas, int i, int j)
