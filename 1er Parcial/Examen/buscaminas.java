@@ -4,7 +4,7 @@ import java.awt.event.*;
 
 public class buscaminas extends JFrame /*implements ActionListener */{
 	//	Atributos
-	JButton botones [][];
+	Botones botones [][];
 	int matrizMinas [][];
     //	Cajas de texto
     JTextField txtMinas=new JTextField(3);
@@ -20,7 +20,7 @@ public class buscaminas extends JFrame /*implements ActionListener */{
 	int filas,columnas;
 	int totalMinas;
 	int totalBanderas;
-	int casillas=filas*columnas-totalMinas;
+	int casillas;
 	//int i, j;
 	
 	//	Clase del tiempo
@@ -28,8 +28,9 @@ public class buscaminas extends JFrame /*implements ActionListener */{
 	
 	buscaminas (int filas, int columnas, int totalMinas){
 		totalBanderas = totalMinas;
-		botones=new JButton [filas][columnas];
+		botones=new Botones [filas][columnas];
 		matrizMinas=new int [filas][columnas];
+		casillas = (filas * columnas) - totalMinas;
 		//	Cargar Imágenes
 		for(int i=0;i<12;i++)
 			imagenesMinas[i]=new ImageIcon(i+".jpg");
@@ -52,7 +53,8 @@ public class buscaminas extends JFrame /*implements ActionListener */{
 			for(int j=0;j<columnas;j++)
 				{
 					//	Crear boton
-					botones [i][j]=new JButton();
+					botones [i][j]=new Botones();
+					botones[i][j].setDestapado(false);
 					//	Colocar en el panel
 					panelMedio.add(botones[i][j]);
 					//	Action Listener
@@ -75,17 +77,28 @@ public class buscaminas extends JFrame /*implements ActionListener */{
 							for(int i=0;i<filas;i++)
 								for(int j=0;j<columnas;j++)
 								{
-									if(ae.getSource()==botones[i][j] && botones[i][j].getIcon()==null && botones[i][j].getBackground()!=Color.WHITE)
+									if(ae.getSource()==botones[i][j] && botones[i][j].getIcon()==null && botones[i][j].getBackground()!=Color.WHITE && botones[i][j].getDestapado() == false)
 									{
 										botones[i][j].setBackground(Color.WHITE);
-    					                                    if(matrizMinas[i][j]==1){
-    					                                    boom(filas,columnas, totalMinas);
-    					                                    }
-    					                                    else
-    					                                    {
-															pulsarVacio(filas,columnas,totalMinas,i,j);
-															destapa(i, j, filas, columnas);
-    					                                    }
+    					                if(matrizMinas[i][j]==1){
+    					                    boom(filas,columnas, totalMinas);
+    					                }
+    					                else
+    					                {
+											int v = pulsarVacio(filas,columnas,totalMinas,i,j);
+											if(v == 0)
+												destapa(i, j, filas, columnas);
+											else {
+												botones[i][j].setDestapado(true);
+												casillas -= 1;
+												txtMinas.setText(Integer.toString(casillas));
+												int cerca = minasCerca(filas,columnas,i,j);
+       		 									botones[i][j].setText(Integer.toString(cerca)); //Cuantas Minas cerca
+												//System.out.println("" + casillas);
+												if(casillas==0)
+													ganar(filas, columnas,totalMinas);
+											}
+										}
 									}	
 	
 								}
@@ -119,43 +132,50 @@ public class buscaminas extends JFrame /*implements ActionListener */{
 	}
 
 	void destapa(int i, int j, int filas, int columnas) {
+		int cerca = minasCerca(filas,columnas,i,j);
 
-        if(i == -1 || j == -1 || botones[i][j].getBackground() != Color.WHITE) {
-			if(matrizMinas[i][j] == 1 || botones[i][j].getBackground() == Color.WHITE || botones[i][j].getIcon() != null) {
-				return;
-			}else {
-				botones[i][j].setBackground(Color.WHITE);
-				casillas--;
-				txtMinas.setText(Integer.toString(casillas));
-        		botones[i][j].setText(Integer.toString(minasCerca(filas,columnas,i,j)));
-				System.out.println(i + "," + j);
-				return;
-			}
+        if(botones[i][j].getDestapado() || matrizMinas[i][j] == 1 || botones[i][j].getIcon() != null) {
+			//System.out.println(botones[i][j].getDestapado() + "," + i + "," + j + " Casillas: " + casillas);
+			return;
 		}
 		
+		casillas -= 1;
+		//System.out.println(i + "," + j + " Casillas: " + casillas);
+		txtMinas.setText(Integer.toString(casillas));
+		botones[i][j].setDestapado(true);
+		botones[i][j].setBackground(Color.WHITE);
+		botones[i][j].setText(Integer.toString(cerca)); //Cuantas Minas cerca
+
+		if(casillas==0)
+			ganar(filas, columnas,totalMinas);
+
+		if (cerca > 0) {
+			return;
+		}
+
 		if (i > 0) {
-            destapa(i - 1, j, filas, columnas);
+			destapa(i - 1, j, filas, columnas);
         }
         if (j > 0) {
-            destapa(i, j - 1, filas, columnas);
+			destapa(i, j - 1, filas, columnas);
         }
         if (j != columnas - 1) {
-            destapa(i, j + 1, filas, columnas);
-        }
+			destapa(i, j + 1, filas, columnas);
+		}
         if (i != filas - 1) {
             destapa(i + 1, j, filas, columnas);
         }
         if (i > 0 && j > 0) {
-            destapa(i - 1, j - 1, filas, columnas);
+			destapa(i - 1, j - 1, filas, columnas);
         }
         if (j != columnas - 1 && i != filas - 1) {
-            destapa(i + 1, j + 1, filas, columnas);
+			destapa(i + 1, j + 1, filas, columnas);
         }
         if (j != columnas - 1 && i > 0) {
-            destapa(i - 1, j + 1, filas, columnas);
+			destapa(i - 1, j + 1, filas, columnas);
         }
         if (i != filas - 1 && j > 0) {
-            destapa(i + 1, j - 1, filas, columnas);
+			destapa(i + 1, j - 1, filas, columnas);
         }
     }
 
@@ -200,24 +220,25 @@ public class buscaminas extends JFrame /*implements ActionListener */{
 
 	void colocarBandera(int i, int j) 
 	{
-		if(botones[i][j].getIcon() == null) {
+		if (botones[i][j].getIcon() != null || totalBanderas == 0 || totalBanderas < 10) { 
+			totalBanderas++;
+			botones[i][j].setIcon(null);
+		} else if (botones[i][j].getIcon() == null || totalBanderas > 0) {
 			botones[i][j].setIcon(imagenBandera);
 			totalBanderas--;
 		}
-		else { 
-			totalBanderas++;
-			botones[i][j].setIcon(null);
-		}
 	}
 
-	void pulsarVacio(int filas, int columnas,int totalMinas, int i, int j)
+	int pulsarVacio(int filas, int columnas,int totalMinas, int i, int j)
 	{
 		//	Al pulsar en una zona vaciá
-		casillas--;
-        txtMinas.setText(Integer.toString(casillas));
-        botones[i][j].setText(Integer.toString(minasCerca(filas,columnas,i,j))); //Cuantas Minas cerca
+		//casillas -= 1;
+		txtMinas.setText(Integer.toString(casillas));
+		int cerca = minasCerca(filas,columnas,i,j);
+        botones[i][j].setText(Integer.toString(cerca)); //Cuantas Minas cerca
         if(casillas==0)
-        	ganar(filas, columnas,totalMinas);
+			ganar(filas, columnas,totalMinas);
+		return cerca;
 	}
 	
 	void volverEmpezar(int filas, int columnas,int totalMinas)
@@ -244,7 +265,8 @@ public class buscaminas extends JFrame /*implements ActionListener */{
 		tp.stop(); //	parar el tiempo
 		//tp.interrupt();
 		JOptionPane.showMessageDialog(this,"Has ganado. Tu tiempo es de: "+txtTiempo.getText());
-		volverEmpezar(filas, columnas, totalMinas);	
+		setVisible(false);
+		//volverEmpezar(filas, columnas, totalMinas);	
 	}
 	
 	void boom(int filas, int columnas, int totalMinas)
@@ -264,7 +286,8 @@ public class buscaminas extends JFrame /*implements ActionListener */{
 			}
 		}
 		JOptionPane.showMessageDialog(this,"Boom!!! Has perdido.");
-		volverEmpezar(filas,columnas,totalMinas);
+		setVisible(false);
+		//volverEmpezar(filas,columnas,totalMinas);
 	}
 	
 	int minasCerca(int filas, int columnas, int x,int y)
