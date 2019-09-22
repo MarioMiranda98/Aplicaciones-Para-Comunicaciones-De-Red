@@ -85,6 +85,7 @@ public class buscaminas extends JFrame /*implements ActionListener */{
     					                }
     					                else
     					                {
+											//System.out.println(i + "," + j);
 											int v = pulsarVacio(filas,columnas,totalMinas,i,j);
 											if(v == 0)
 												destapa(i, j, filas, columnas);
@@ -93,8 +94,11 @@ public class buscaminas extends JFrame /*implements ActionListener */{
 												casillas -= 1;
 												txtMinas.setText(Integer.toString(casillas));
 												int cerca = minasCerca(filas,columnas,i,j);
-       		 									botones[i][j].setText(Integer.toString(cerca)); //Cuantas Minas cerca
-												//System.out.println("" + casillas);
+												if(cerca != 0)
+       		 										botones[i][j].setText(Integer.toString(cerca)); //Cuantas Minas cerca
+												else
+													botones[i][j].setText("");
+														//System.out.println("" + casillas);
 												if(casillas==0)
 													ganar(filas, columnas,totalMinas);
 											}
@@ -144,7 +148,10 @@ public class buscaminas extends JFrame /*implements ActionListener */{
 		txtMinas.setText(Integer.toString(casillas));
 		botones[i][j].setDestapado(true);
 		botones[i][j].setBackground(Color.WHITE);
-		botones[i][j].setText(Integer.toString(cerca)); //Cuantas Minas cerca
+		if(cerca != 0)
+			botones[i][j].setText(Integer.toString(cerca)); //Cuantas Minas cerca
+		else 
+			botones[i][j].setText("");
 
 		if(casillas==0)
 			ganar(filas, columnas,totalMinas);
@@ -235,7 +242,10 @@ public class buscaminas extends JFrame /*implements ActionListener */{
 		//casillas -= 1;
 		txtMinas.setText(Integer.toString(casillas));
 		int cerca = minasCerca(filas,columnas,i,j);
-        botones[i][j].setText(Integer.toString(cerca)); //Cuantas Minas cerca
+		if(cerca != 0)
+			botones[i][j].setText(Integer.toString(cerca)); //Cuantas Minas cerca
+		else
+			botones[i][j].setText("");
         if(casillas==0)
 			ganar(filas, columnas,totalMinas);
 		return cerca;
@@ -302,7 +312,7 @@ public class buscaminas extends JFrame /*implements ActionListener */{
             int numeroMinas=0;
             for(int i=y-1;i<=y+1;i++){
             	//En horizontal
-                if(i>-1 && i<filas){
+                if(i>-1 && i<columnas){
 	                if(matrizMinas[x][i]==1){
 	             		numeroMinas++;
 	                }
@@ -310,7 +320,7 @@ public class buscaminas extends JFrame /*implements ActionListener */{
             }
             //	En vertical
                 for(int j=x-1;j<=x+1;j++){
-	                		if(j>-1 && j<columnas)
+	                		if(j>-1 && j<filas)
 	                			if(matrizMinas[j][y]==1){
 	                			numeroMinas++;
 	                			}
