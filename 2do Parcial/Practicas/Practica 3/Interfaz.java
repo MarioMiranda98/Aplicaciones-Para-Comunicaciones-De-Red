@@ -10,7 +10,7 @@ public class Interfaz extends JFrame {
         this.puerto = puerto;
         this.nombre = nombre;
         //----------------Creando Interfaz-------------------------//
-        setBounds(325, 100, 800, 400);
+        setBounds(325, 100, 800, 500);
         setTitle("Practica 3");
         setResizable(false);
 
@@ -19,23 +19,28 @@ public class Interfaz extends JFrame {
         panelInferior = new JPanel();
         panelEmojis = new JPanel();
         panelFunciones = new JPanel();
+        panelUsuarios = new JPanel();
         editor = new JEditorPane();
         editor.setContentType("text/html");
-        usuariosConectados = new JComboBox<>();
-        areaMensaje = new JTextField(200);
-        botonesEmojis = new JButton[6];
+        areaMensaje = new JTextArea();
+        areaMensaje.setLineWrap(true);
+        botonesEmojis = new JButton[textoBotonesEmojis.length];
         enviar = new JButton("Enviar");
         archivo = new JButton("Archivo");
+        usuariosConectados = new JLabel("    Usuarios Conectados   ");
+        escuchaEmojis = new ManejoEmojis();
 
         panelPrincipal.setLayout(new BorderLayout(5, 5));
-        panelCentral.setLayout(new GridLayout(1, 2, 3, 3));
+        panelCentral.setLayout(new BorderLayout(5, 5));
         panelInferior.setLayout(new BoxLayout(this.panelInferior, BoxLayout.Y_AXIS));
         panelFunciones.setLayout(new BoxLayout(this.panelFunciones, BoxLayout.X_AXIS));
+        panelUsuarios.setLayout(new BoxLayout(this.panelUsuarios, BoxLayout.Y_AXIS));
 
         colocarBotones();
-        panelCentral.add(editor);
-        panelCentral.add(usuariosConectados);
-        panelFunciones.add(areaMensaje);
+        panelUsuarios.add(usuariosConectados);
+        panelCentral.add(new JScrollPane(editor), BorderLayout.CENTER);
+        panelCentral.add(new JScrollPane(panelUsuarios, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER), BorderLayout.EAST);
+        panelFunciones.add(new JScrollPane(areaMensaje));
         panelFunciones.add(enviar);
         panelFunciones.add(archivo);
         panelInferior.add(panelEmojis);
@@ -51,7 +56,14 @@ public class Interfaz extends JFrame {
     private void colocarBotones() {
         for(int i = 0; i < botonesEmojis.length; i += 1) {
             botonesEmojis[i] = new JButton("" + textoBotonesEmojis[i]);
+            botonesEmojis[i].addActionListener(escuchaEmojis);
             panelEmojis.add(botonesEmojis[i]);
+        }
+    }
+
+    private class ManejoEmojis implements ActionListener {
+        public void actionPerformed(ActionEvent e) {
+            areaMensaje.append(" " + e.getActionCommand() + " ");
         }
     }
 
@@ -63,8 +75,8 @@ public class Interfaz extends JFrame {
     private JPanel panelInferior;
     private JPanel panelEmojis;
     private JPanel panelFunciones;
+    private JPanel panelUsuarios; 
     private JEditorPane editor;
-    private JComboBox<String> usuariosConectados;
     private JButton[] botonesEmojis;
     private String[] textoBotonesEmojis = {
         ":)",
@@ -72,9 +84,15 @@ public class Interfaz extends JFrame {
         ":'(",
         ":')",
         ":v",
-        "<{:v"
+        "<{:v",
+        "<3",
+        "°<:{v",
+        "7u7",
+        "UwU"
     };
-    private JTextField areaMensaje;
+    private JTextArea areaMensaje;
     private JButton enviar;
     private JButton archivo;
+    private JLabel usuariosConectados;
+    private ActionListener escuchaEmojis;
 }
