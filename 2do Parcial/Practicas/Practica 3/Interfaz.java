@@ -84,7 +84,7 @@ public class Interfaz extends JFrame {
         ":'(",
         ":')",
         ":v",
-        "<{:v",
+        "{:v",
         "<3",
         "°<:{v",
         "7u7",
