@@ -41,7 +41,7 @@ public class Principal extends JFrame {
         new Principal();
     }
 
-    private final String HOST = "127.0.0.1";
+    private final String HOST = "230.1.1.1";
     private final int PUERTO = 9000;
     private JPanel panelPrincipal;
     private JPanel panelCentral;

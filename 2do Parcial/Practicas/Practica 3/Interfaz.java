@@ -22,6 +22,7 @@ public class Interfaz extends JFrame {
         panelUsuarios = new JPanel();
         editor = new JEditorPane();
         editor.setContentType("text/html");
+        editor.setEditable(false);
         areaMensaje = new JTextArea();
         areaMensaje.setLineWrap(true);
         botonesEmojis = new JButton[textoBotonesEmojis.length];
@@ -30,6 +31,12 @@ public class Interfaz extends JFrame {
         usuariosConectados = new JLabel("    Usuarios Conectados   ");
         escuchaEmojis = new ManejoEmojis();
 
+        enviar.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                miCliente.enviar();
+            }
+        });
+
         panelPrincipal.setLayout(new BorderLayout(5, 5));
         panelCentral.setLayout(new BorderLayout(5, 5));
         panelInferior.setLayout(new BoxLayout(this.panelInferior, BoxLayout.Y_AXIS));
@@ -37,6 +44,7 @@ public class Interfaz extends JFrame {
         panelUsuarios.setLayout(new BoxLayout(this.panelUsuarios, BoxLayout.Y_AXIS));
 
         colocarBotones();
+        addWindowListener(new CorreCliente());
         panelUsuarios.add(usuariosConectados);
         panelCentral.add(new JScrollPane(editor), BorderLayout.CENTER);
         panelCentral.add(new JScrollPane(panelUsuarios, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER), BorderLayout.EAST);
@@ -64,6 +72,13 @@ public class Interfaz extends JFrame {
     private class ManejoEmojis implements ActionListener {
         public void actionPerformed(ActionEvent e) {
             areaMensaje.append(" " + e.getActionCommand() + " ");
+        }
+    }
+
+    private class CorreCliente extends WindowAdapter {
+        public void windowOpened(WindowEvent we) {
+            System.out.println("Ventana abierta");
+            miCliente = new Cliente(nombre, host, puerto, editor);
         }
     }
 
@@ -95,4 +110,5 @@ public class Interfaz extends JFrame {
     private JButton archivo;
     private JLabel usuariosConectados;
     private ActionListener escuchaEmojis;
+    private Cliente miCliente;
 }
