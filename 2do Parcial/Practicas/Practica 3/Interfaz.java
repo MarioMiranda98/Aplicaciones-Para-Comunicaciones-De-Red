@@ -4,12 +4,13 @@ import java.awt.event.*;
 
 public class Interfaz extends JFrame {
     private static final long serialVersionUID = 2L;
+
     public Interfaz(String host, int puerto, String nombre) {
-        //-----------------Recibiendo Parametros------------------//
+        // -----------------Recibiendo Parametros------------------//
         this.host = host;
         this.puerto = puerto;
         this.nombre = nombre;
-        //----------------Creando Interfaz-------------------------//
+        // ----------------Creando Interfaz-------------------------//
         setBounds(325, 100, 800, 500);
         setTitle("Practica 3: " + nombre);
         setResizable(false);
@@ -37,7 +38,7 @@ public class Interfaz extends JFrame {
 
         enviar.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                miCliente.enviar(new Mensaje("[" + nombre + "]: "  + areaMensaje.getText(), nombre, "", 1));
+                miCliente.enviar(new Mensaje("[" + nombre + "]: " + areaMensaje.getText(), nombre, "", 1));
                 areaMensaje.setText("");
             }
         });
@@ -47,11 +48,19 @@ public class Interfaz extends JFrame {
                 JFileChooser jf = new JFileChooser();
                 jf.requestFocus();
                 int r = jf.showOpenDialog(Interfaz.this);
-                if(r == JFileChooser.APPROVE_OPTION) {
+                if (r == JFileChooser.APPROVE_OPTION) {
                     miCliente.enviarArchivo(jf.getSelectedFile());
-                    String mensaje = "El usuario [" + nombre +"] ha compartido un archivo";
+                    String mensaje = "El usuario [" + nombre + "] ha compartido un archivo";
                     miCliente.enviar(new Mensaje(mensaje, nombre, "", 1));
                 }
+            }
+        });
+
+        seleccion.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                miCliente.enviar(new Mensaje("[" + nombre + "]: " + areaMensaje.getText(), nombre,
+                (String) usuarioConectado.getSelectedItem(), 4));
+                areaMensaje.setText("");
             }
         });
 

@@ -67,7 +67,14 @@ public class Cliente {
                             byte[] busuario = msj.getUsuarioOrigen().getBytes();
                             String usuario = new String(busuario, 0, msj.getUsuarioOrigen().length());
                             usuarioConectado.addItem(usuario);
-                        }
+                        } else if(msj.getTipo() == 4 && msj.getUsuarioDestino().equals(nombre) && !msj.getUsuarioOrigen().equals(nombre)) {
+                            byte[] bmsj = msj.getMensaje().getBytes();
+                            String mensaje = new String(bmsj, 0, msj.getMensaje().length());
+                            mensaje = "[Privado]D:[" + nombre + "]O:" + mensaje;
+                            HTMLEditorKit kit = (HTMLEditorKit) editor.getEditorKit();
+                            StringReader reader = new StringReader(mensaje);
+                            kit.read(reader, editor.getDocument(), editor.getDocument().getLength());
+                        } 
                         ois.close();
                     }
                 } catch (Exception e) {
