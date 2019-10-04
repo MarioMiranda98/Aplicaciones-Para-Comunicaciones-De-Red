@@ -3,6 +3,7 @@ import java.io.*;
 import javax.swing.*;
 import javax.swing.text.html.HTMLEditorKit;
 import java.util.*;
+import java.util.regex.*;
 
 public class Cliente {
     public Cliente(String nombre, String host, int puerto, JEditorPane editor, JComboBox<String> usuarioConectado) {
@@ -109,6 +110,116 @@ public class Cliente {
     }
 
     public void enviar(Mensaje msj) {
+        p = Pattern.compile("UwU");
+        m = p.matcher(msj.getMensaje());
+
+        if(m.find()) {
+            System.out.println("Se encontro UwU");
+            String imgsrc = Cliente.class.getClassLoader().getSystemResource("./Emojis/uwu.png").toString();
+            String img = "<img src = '" + imgsrc + "' width = 50 height = 50>"; 
+            String cad = msj.getMensaje().replace("UwU", img);
+            msj.setMensaje(cad);
+        }         
+
+        p = Pattern.compile("7u7");
+        m = p.matcher(msj.getMensaje());
+
+        if(m.find()) {
+            System.out.println("Se encontro 7u7");
+            String imgsrc = Cliente.class.getClassLoader().getSystemResource("./Emojis/7u7.png").toString();
+            String img = "<img src = '" + imgsrc + "' width = 25 height = 25>"; 
+            String cad = msj.getMensaje().replace("7u7", img);
+            msj.setMensaje(cad);
+        }         
+
+        p = Pattern.compile("°|:'v");
+        m = p.matcher(msj.getMensaje());
+
+        if(m.find()) {
+            System.out.println("Se encontro °<:{v");
+            String imgsrc = Cliente.class.getClassLoader().getSystemResource("./Emojis/navidad.png").toString();
+            String img = "<img src = '" + imgsrc + "' width = 50 height = 30>"; 
+            String cad = msj.getMensaje().replace("°|:'v", img);
+            msj.setMensaje(cad);
+        }         
+
+        p = Pattern.compile("<3");
+        m = p.matcher(msj.getMensaje());
+
+        if(m.find()) {
+            System.out.println("Se encontro <3");
+            String imgsrc = Cliente.class.getClassLoader().getSystemResource("./Emojis/cora.png").toString();
+            String img = "<img src = '" + imgsrc + "' width = 25 height = 25>"; 
+            String cad = msj.getMensaje().replace("<3", img);
+            msj.setMensaje(cad);
+        }         
+
+        p = Pattern.compile("|:v");
+        m = p.matcher(msj.getMensaje());
+
+        if(m.find()) {
+            System.out.println("Se encontro {:v");
+            String imgsrc = Cliente.class.getClassLoader().getSystemResource("./Emojis/jackie.png").toString();
+            String img = "<img src = '" + imgsrc + "' width = 50 height = 30>"; 
+            String cad = msj.getMensaje().replace("|:v", img);
+            msj.setMensaje(cad);
+        }         
+
+        p = Pattern.compile(":v");
+        m = p.matcher(msj.getMensaje());
+
+        if(m.find()) {
+            System.out.println("Se encontro :v");
+            String imgsrc = Cliente.class.getClassLoader().getSystemResource("./Emojis/pacman.png").toString();
+            String img = "<img src = '" + imgsrc + "' width = 25 height = 25>"; 
+            String cad = msj.getMensaje().replace(":v", img);
+            msj.setMensaje(cad);
+        }         
+
+        p = Pattern.compile(":'||");
+        m = p.matcher(msj.getMensaje());
+
+        if(m.find()) {
+            System.out.println("Se encontro :'(");
+            String imgsrc = Cliente.class.getClassLoader().getSystemResource("./Emojis/lagrima.png").toString();
+            String img = "<img src = '" + imgsrc + "' width = 25 height = 25>"; 
+            String cad = msj.getMensaje().replace(":'||", img);
+            msj.setMensaje(cad);
+        }         
+
+        p = Pattern.compile(":'|");
+        m = p.matcher(msj.getMensaje());
+
+        if(m.find()) {
+            System.out.println("Se encontro :')");
+            String imgsrc = Cliente.class.getClassLoader().getSystemResource("./Emojis/risas.png").toString();
+            String img = "<img src = '" + imgsrc + "' width = 25 height = 25>"; 
+            String cad = msj.getMensaje().replace(":'|", img);
+            msj.setMensaje(cad);
+        }         
+
+        p = Pattern.compile(":||");
+        m = p.matcher(msj.getMensaje());
+
+        if(m.find()) {
+            System.out.println("Se encontro :(");
+            String imgsrc = Cliente.class.getClassLoader().getSystemResource("./Emojis/triste.png").toString();
+            String img = "<img src = '" + imgsrc + "' width = 25 height = 25>"; 
+            String cad = msj.getMensaje().replace(":||", img);
+            msj.setMensaje(cad);
+        }         
+
+        p = Pattern.compile(":|");
+        m = p.matcher(msj.getMensaje());
+
+        if(m.find()) {
+            System.out.println("Se encontro :)");
+            String imgsrc = Cliente.class.getClassLoader().getSystemResource("./Emojis/feliz.png").toString();
+            String img = "<img src = '" + imgsrc + "' width = 25 height = 25>"; 
+            String cad = msj.getMensaje().replace(":|", img);
+            msj.setMensaje(cad);
+        }            
+
         new Thread(new EnviaMensajes(msj)).start();
     }
 
@@ -238,4 +349,6 @@ public class Cliente {
     private JComboBox<String> usuarioConectado;
     private DataOutputStream dos;
     private ArrayList <byte[]> lista = null;
+    private Pattern p;
+    private Matcher m;
 }

@@ -127,14 +127,14 @@ public class Interfaz extends JFrame {
     private JEditorPane editor;
     private JButton[] botonesEmojis;
     private String[] textoBotonesEmojis = {
-        ":)",
-        ":(",
-        ":'(",
-        ":')",
+        ":|",
+        ":||",
+        ":'|",
+        ":'||",
         ":v",
-        "{:v",
+        "|:v",
         "<3",
-        "°<:{v",
+        "°|:'v",
         "7u7",
         "UwU"
     };
