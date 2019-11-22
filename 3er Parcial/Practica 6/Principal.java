@@ -1,7 +1,12 @@
+import java.io.IOException;
 import interfaz.Interfaz;
 
 public class Principal {
     public static void main(String[] args) {
-        new Interfaz();
+        try {
+            new Interfaz();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }

@@ -17,7 +17,7 @@ public class AdministradorDeOperacionesMulticast {
     }
 
     private static class AdministradorDeOperacionesHolder {
-        private static final AdministradorDeOperacionesMulticast INSTANCE = new AdministradorDeOperacionesMulticast();
+        private static  AdministradorDeOperacionesMulticast INSTANCE = new AdministradorDeOperacionesMulticast();
     }
 
     public static AdministradorDeOperacionesMulticast getInstance() {
@@ -98,10 +98,10 @@ public class AdministradorDeOperacionesMulticast {
     private DatagramPacket packet;
     private byte b[];
     private InetAddress grupo = null;
-    public final int TAM_BUFFER = 100;
-    public final String INICIO = "<inicio>";
-    public final String FIN = "<fin>";
-    public final static  int DESCONOCIDO_ID = 0;
-    public final static  int INICIO_ID = 1;
-    public final static  int FIN_ID = 2;
+    public  int TAM_BUFFER = 100;
+    public  final String INICIO = "<inicio>";
+    public  final String FIN = "<fin>";
+    public  static final int DESCONOCIDO_ID = 0;
+    public  static final int INICIO_ID = 1;
+    public  static final int FIN_ID = 2;
 }

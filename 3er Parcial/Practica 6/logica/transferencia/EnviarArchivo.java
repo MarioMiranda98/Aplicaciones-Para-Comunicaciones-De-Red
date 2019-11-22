@@ -9,8 +9,8 @@ import java.rmi.server.UnicastRemoteObject;
 public class EnviarArchivo implements Transferencia {
 
     public EnviarArchivo(int puertoRuta, TransferenciaListener listener) throws RemoteException, AlreadyBoundException {
-        final Remote stub = UnicastRemoteObject.exportObject(this, 0);
-        final Registry registry = LocateRegistry.createRegistry(puertoRuta + 100);
+         Remote stub = UnicastRemoteObject.exportObject(this, 0);
+         Registry registry = LocateRegistry.createRegistry(puertoRuta + 100);
 
         registry.bind("transferir", stub);
         ruta += (puertoRuta + "/");
@@ -18,7 +18,7 @@ public class EnviarArchivo implements Transferencia {
     }
 
     public void inicializarDescarga(String name, int totalNodos, int nodo) {
-        final File f = new File(ruta + name);
+         File f = new File(ruta + name);
         this.f = f;
         long tamanio = f.length();
         long parte = (tamanio / totalNodos);
@@ -35,7 +35,7 @@ public class EnviarArchivo implements Transferencia {
         }
 
         try {
-            final FileInputStream fis = new FileInputStream(f);
+             FileInputStream fis = new FileInputStream(f);
             fis.skip(inicio);
             this.fis = fis;
         } catch (Exception e) {

@@ -94,6 +94,6 @@ public class RecibirArchivo extends Thread {
     private int nodo;
     private String nombreArchivo;
     private static final int TAM = 10000;
-    private String ruta = "./../../Carpetas/";
+    private String ruta = "./Carpetas/";
     private TransferenciaListener listener;
 }

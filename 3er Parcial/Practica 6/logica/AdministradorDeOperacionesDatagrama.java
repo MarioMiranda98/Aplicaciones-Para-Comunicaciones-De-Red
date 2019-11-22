@@ -36,7 +36,7 @@ public class AdministradorDeOperacionesDatagrama {
     }
 
     public static final int BUSCAR = 1;
-    public static final int RESPUESTA = 2;
-    private final static int TAM = 1024;
+    public static  final int RESPUESTA = 2;
+    private  static final int TAM = 1024;
     private static AdministradorDeOperacionesDatagrama INSTANCE = null;
 }

@@ -18,6 +18,6 @@ public class OperacionesNodo {
         return MD5Checksum.getMD5Checksum(ruta + nombre);
     }
 
-    public static final String RUTA = "./../Carpetas/";
-    private String ruta;
+    public static final String RUTA = "./Carpetas/";
+    private String ruta = "";
 }
