@@ -45,7 +45,7 @@ public class RecibirArchivo extends Thread {
     }
 
     public void run() {
-        String nombreCopia = ruta + "(" + nodo + ")" + nombreArchivo;
+        String nombreCopia = "./Carpetas/" + ruta + "(" + nodo + ")" + nombreArchivo;
         try {
             final Transferencia lookUp = (Transferencia) Naming.lookup("//" + ip + ":" + puerto + "/transferir");
             lookUp.inicializarDescarga(nombreArchivo, totalNodos, nodo);

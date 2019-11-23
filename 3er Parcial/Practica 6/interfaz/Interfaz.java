@@ -196,10 +196,10 @@ public class Interfaz extends JFrame implements ActionListener, TransferenciaLis
                     }
 
                     if(size > 1) {
-                        RecibirArchivo.unirArchivos(size, busqueda.getNombreArchivo(), "./../Carpetas/" + puerto + "/");
+                        RecibirArchivo.unirArchivos(size, busqueda.getNombreArchivo(), "./Carpetas/" + puerto + "/");
                     } else {
-                        File f = new File("./../Carpetas/" + puerto + "/" + "(0)" + busqueda.getNombreArchivo());
-                        f.renameTo(new File("./../Carpetas/" + puerto + "/" + busqueda.getNombreArchivo()));
+                        File f = new File("./Carpetas/" + puerto + "/" + "(0)" + busqueda.getNombreArchivo());
+                        f.renameTo(new File("./Carpetas/" + puerto + "/" + busqueda.getNombreArchivo()));
                     }
 
                     botones = null;
