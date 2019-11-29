@@ -88,7 +88,7 @@ public class AdministradorDeOperacionesMulticast {
     public Mensaje recibe() throws IOException {
         DatagramPacket packet = new DatagramPacket(new byte[TAM_BUFFER], TAM_BUFFER);
         cl.receive(packet);
-        String mensaje = new String(packet.getData());
+        String mensaje = new String(packet.getData(), 0, packet.getData().length);
         return getMensaje(mensaje);
     }
 

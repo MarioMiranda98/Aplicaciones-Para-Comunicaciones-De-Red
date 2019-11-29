@@ -19,6 +19,8 @@ import java.net.*;
 import java.rmi.*;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class Interfaz extends JFrame implements ActionListener, TransferenciaListener {
     private static final long serialVersionUID = 1L;
@@ -122,6 +124,25 @@ public class Interfaz extends JFrame implements ActionListener, TransferenciaLis
         System.out.println(puerto);
     }
 
+    private void pedirDatos() {
+        puertoCad = JOptionPane.showInputDialog(Interfaz.this, "Introduce el puerto");
+
+        if (puertoCad.equals(""))
+            pedirDatos();
+        else {
+            setTitle("Practica 6: " + puertoCad);
+        }
+    }
+
+    private void cerrar() throws IOException {
+        if (JOptionPane.showConfirmDialog(Interfaz.this, "Deseas Salir?", "Salir",
+                JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
+            AdministradorDeOperacionesMulticast.getInstance().salirDelAnillo(nodo.getId());
+            System.exit(0);
+        }
+    }
+
+
     public void actionPerformed( ActionEvent e) {
         if(e.getSource().equals(botonBuscar)) {
             if(campoArchivo.getText().length() < 1) {
@@ -171,7 +192,7 @@ public class Interfaz extends JFrame implements ActionListener, TransferenciaLis
                     int size = busqueda.getArchivos().get(pos).getNodos().size();
                     Thread hilo[] = new Thread[size];
 
-                    for(int i = 0; i <size; i++) {
+                    for(int i = 0; i < size; i++) {
                         Nodo n = busqueda.getArchivos().get(pos).getNodos().get(i);
 
                         try {
@@ -196,13 +217,16 @@ public class Interfaz extends JFrame implements ActionListener, TransferenciaLis
                     }
 
                     if(size > 1) {
-                        RecibirArchivo.unirArchivos(size, busqueda.getNombreArchivo(), "./Carpetas/" + puerto + "/");
+                        RecibirArchivo.unirArchivos(size, busqueda.getNombreArchivo(), puerto + "/");
                     } else {
                         File f = new File("./Carpetas/" + puerto + "/" + "(0)" + busqueda.getNombreArchivo());
                         f.renameTo(new File("./Carpetas/" + puerto + "/" + busqueda.getNombreArchivo()));
                     }
 
                     botones = null;
+                    JPanel j = new JPanel();
+                    j.setBackground(Color.WHITE);
+                    areaArchivos.setViewportView(j);
                     logTemporal += ("Archivo: " + busqueda.getNombreArchivo() + "transferido<br>");
                     areaEstado.setText(logTemporal);
                     busqueda = new Busqueda();
@@ -215,139 +239,44 @@ public class Interfaz extends JFrame implements ActionListener, TransferenciaLis
         }
     }
 
-    private void cerrar() throws IOException {
-        if (JOptionPane.showConfirmDialog(Interfaz.this, "Deseas Salir?", "Salir",
-                JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
-            AdministradorDeOperacionesMulticast.getInstance().salirDelAnillo(nodo.getId());
-            System.exit(0);
-        }
+    private RecibirArchivo recibirArchivo(Nodo n, int numNodos, int nodo) 
+            throws NotBoundException, FileNotFoundException, IOException {
+        return new RecibirArchivo(n.getIp(), n.getPuerto(), numNodos, nodo,
+                                busqueda.getNombreArchivo(), puerto, this);
     }
-
-    private void anunciar() {
-        Thread hilo = new Thread(){
-        public void run() {
-            while(true) {
-                try {
-                    AdministradorDeOperacionesMulticast.getInstance().anunciar(nodo.getId());
-                    TimeUnit.SECONDS.sleep(5);
-                }catch( Exception e) { e.printStackTrace(); }
-            }
-        }
-        };
-        hilo.start();
-    }
-
-    private void actualizarListaDeNodosMulticast() {
-        Thread hilo = new Thread() {
-            public void run() {
-                while(true) {
-                    try {
-                        actualizarMulticast();
-                    } catch( Exception e) { e.printStackTrace(); }
-                }
-            }
-        };
-        hilo.start();
-    }
-
-    private void recibirDatagrama() {
-        Thread hilo = new Thread() {
-            public void run() {
-                while(true) {
-                    try {
-                        actualizarDatagrama();
-                    } catch( Exception e) { e.printStackTrace(); }
-                }
-            }
-        };
-
-        hilo.start();
-    }
-
-    private RecibirArchivo recibirArchivo(Nodo n, int numNodos, int nodo) throws NotBoundException, FileNotFoundException, IOException {
-        return new RecibirArchivo(n.getIp(), n.getPuerto(), numNodos, nodo, busqueda.getNombreArchivo(), puerto, this);
-    }
-
-    private void actualizarDatagrama() throws IOException, Exception {
-        Busqueda busqueda = adopd.recibe();
-        busqueda.imprimir();
-        
-        switch (busqueda.getId()) {
-            case BUSCAR:
-                logTemporal += ("Buscando: " + busqueda.getNombreArchivo() + "<br>");
-                areaEstado.setText(logTemporal);
-                if (operacionesNodo.buscarArchivo(busqueda.getNombreArchivo())) {
-                    String md5 = operacionesNodo.getChecksum(busqueda.getNombreArchivo());
-                    logTemporal += ("Archivo: " + busqueda.getNombreArchivo() + " encontrado<br>");
-                    logTemporal += ("MD5: " + md5 + "<br>");
-                    areaEstado.setText(logTemporal);
-                    agregarArchivoABusqueda(busqueda, md5, nodo);
-                } 
-                else {
-                    logTemporal += ("Archivo: " + busqueda.getNombreArchivo() + " NO encontrado<br>");
-                    areaEstado.setText(logTemporal);
-                }
-                
-                if (busqueda.getNodoOrigen().equals(nodoSiguiente.getId())) {
-                    busqueda.setId(RESPUESTA);
-                    adopd.enviarMensaje(busqueda, nodoAnterior.getIp(), nodoAnterior.getPuerto());
-                } else {
-                    adopd.enviarMensaje(busqueda, nodoSiguiente.getIp(), nodoSiguiente.getPuerto());
-                }
-                break;
-                
-            case RESPUESTA:   
-                if(busqueda.getArchivos().size() == 0) {
-                    logTemporal += ("Archivo: " + busqueda.getNombreArchivo() + " no encontrado "
-                            + "en el anillo<br>");
-                    areaEstado.setText(logTemporal);
-                }
-                else {
-                    logTemporal+= ("Archivo " + busqueda.getNombreArchivo() + " localizado en el anillo<br>");
-                    areaEstado.setText(logTemporal);
-                }
-                
-                if(busqueda.getNodoOrigen().equals(nodo.getId())) {
-                    JPanel panel = new JPanel(new GridLayout(5, 1));
-                    panel.setBackground(Color.WHITE);
-                    this.busqueda = busqueda;
-                    //Mostrar opciones de descarga
-                    if(busqueda.getArchivos().size() > 0) {
-                        botones = new JRadioButton[busqueda.getArchivos().size()];
-                        for(int i = 0; i < busqueda.getArchivos().size(); i++) {
-                            String informacion = "<html><body>";
-                            informacion += busqueda.getNombreArchivo() + "<br>";
-                            informacion += "md5: " + busqueda.getArchivos().get(i).getMd5() + "<br>";
-                            
-                            for(int j = 0; j < busqueda.getArchivos().get(i).getNodos().size(); j++) {
-                                informacion += (busqueda.getArchivos().get(i).getNodos().get(j).getId() + "<br>");
-                            }
-                            informacion += "</body></body>";
-                            botones[i] = new JRadioButton(informacion);
-                            botones[i].addActionListener(new ActionListener(){
-                                public void actionPerformed( ActionEvent ae) {
-                                    for(short i = 0; i < botones.length; i++) {
-                                        if(ae.getSource().equals(botones[i])) {
-                                            botones[i].setSelected(true);      
-                                        }
-                                        else {
-                                            botones[i].setSelected(false);
-                                        }
-                                    }
-                                    botonDescargar.setEnabled(true);
-                                }
-                            });
-                            panel.add(botones[i]);
+    
+    private void actualizarMulticast() throws IOException {
+        Mensaje mensaje = AdministradorDeOperacionesMulticast.getInstance().recibe();
+        if (mensaje.getNombreOrigen() != null) {
+            switch (mensaje.getId()) {
+                case INICIO_ID:
+                    if (!mensaje.getNombreOrigen().equals(nodo.getId())) {
+                        if(inicioNodo(mensaje.getNombreOrigen())) {
+                            actualizarListaDeNodos();
+                            nodoSiguiente = getNodoSiguiente(puerto);
+                            nodoAnterior = getNodoAnterior(puerto);
                         }
-                        areaArchivos.setViewportView(panel);
                     }
-                }
-                else
-                    adopd.enviarMensaje(busqueda, nodoAnterior.getIp(), nodoAnterior.getPuerto());   
-                break;
-        }   
+                    break;
+                case FIN_ID:
+                    finalizarNodo(mensaje.getNombreOrigen());
+                    break;
+            
+                default:
+            }
+        }
     }
-
+    
+    private void finalizarNodo(String id) {
+        if (finNodo(id)) {
+            actualizarListaDeNodos();
+            if (nodos.size() > 0) {
+                nodoSiguiente = getNodoSiguiente(puerto);
+                nodoAnterior = getNodoAnterior(puerto);
+            } 
+        }
+    }
+    
     private void agregarArchivoABusqueda(Busqueda busqueda, String md5, Nodo nodo) {
         int tam = busqueda.getArchivos().size();
         boolean noEncontrado = true;
@@ -373,100 +302,204 @@ public class Interfaz extends JFrame implements ActionListener, TransferenciaLis
             busqueda.getArchivos().add(a);
         }
     }
-
-    private void enviarArchivo() {
-        Thread hilo = new Thread() {
-            public void run() {
-                progreso.setValue(0);
-                envio();
-            }   
-        };
-
-        hilo.start();
-    }
-
-    private void envio() {
-        try {
-            EnviarArchivo ea = new EnviarArchivo(puerto, this);
-        }catch (Exception e) { e.printStackTrace(); }
-    }
-
-    private void decrementarServidor() {
-        Thread hilo = new Thread() {
-            public void run() {
-                while(true) {
-                    Nodo n;
-                    for(short i = 0; i < nodos.size(); i++) {
-                        n = (Nodo) nodos.get(i);
-                        n.temporalizador--;
-                        if(n.temporalizador < 1) {
-                            finalizarNodo(n.getId());
-                            logTemporal += (n.getId() + " ha salido con error <br>");
-                            areaEstado.setText(logTemporal);
-                        }
-                    }
-
-                    try{    
-                        TimeUnit.SECONDS.sleep(1);
-                    }catch( Exception e) { e.printStackTrace(); }
+    
+    private void actualizarDatagrama() throws IOException, Exception {
+        Busqueda busqueda = adopd.recibe();
+        busqueda.imprimir();
+        
+        switch (busqueda.getId()) {
+            case BUSCAR:
+                logTemporal += ("Buscando: " + busqueda.getNombreArchivo() + "<br>");
+                areaEstado.setText(logTemporal);
+                if (operacionesNodo.buscarArchivo(busqueda.getNombreArchivo())) {
+                    String md5 = operacionesNodo.getChecksum(busqueda.getNombreArchivo());
+                    logTemporal += ("Archivo: " + busqueda.getNombreArchivo() + " encontrado<br>");
+                    logTemporal += ("MD5: " + md5 + "<br>");
+                    areaEstado.setText(logTemporal);
+                    agregarArchivoABusqueda(busqueda, md5, nodo);
+                } 
+                else  {
+                    logTemporal += ("Archivo: " + busqueda.getNombreArchivo() + " NO encontrado<br>");
+                    areaEstado.setText(logTemporal);
                 }
-            }
-        };
-
-        hilo.start();
-    }
-
-    private void actualizarMulticast() throws IOException {
-        Mensaje mensaje = AdministradorDeOperacionesMulticast.getInstance().recibe();
-        if(mensaje.getNombreOrigen() != null) {
-            switch(mensaje.getId()) {
-                case INICIO_ID:
-                    if(!mensaje.getNombreOrigen().equals(nodo.getId())) {
-                        if(inicioNodo(mensaje.getNombreOrigen())) {
-                            actualizarListaDeNodos();
-                            nodoSiguiente = getNodoSiguiente(puerto);
-                            nodoAnterior = getNodoAnterior(puerto);
+                
+                if (busqueda.getNodoOrigen().equals(nodoSiguiente.getId())) {
+                    busqueda.setId(RESPUESTA);
+                    adopd.enviarMensaje(busqueda, nodoAnterior.getIp(), nodoAnterior.getPuerto());
+                } else {
+                    adopd.enviarMensaje(busqueda, nodoSiguiente.getIp(), nodoSiguiente.getPuerto());
+                }
+                break;
+                
+            case RESPUESTA:
+                
+                if(busqueda.getArchivos().size() == 0) {
+                    logTemporal += ("Archivo: " + busqueda.getNombreArchivo() + " no encontrado "
+                            + "en el anillo<br>");
+                    areaEstado.setText(logTemporal);
+                }
+                else {
+                    logTemporal+= ("Archivo " + busqueda.getNombreArchivo() + " localizado en el anillo<br>");
+                    areaEstado.setText(logTemporal);
+                }
+                
+                if(busqueda.getNodoOrigen().equals(nodo.getId())) {
+                    JPanel panel = new JPanel(new GridLayout(5, 1));
+                    panel.setBackground(Color.WHITE);
+                    this.busqueda = busqueda;
+                    //Mostrar opcones de descarga
+                    if(busqueda.getArchivos().size() > 0) {
+                        botones = new JRadioButton[busqueda.getArchivos().size()];
+                        for(int i = 0; i < busqueda.getArchivos().size(); i++) {
+                            String informacion = "<html><body>";
+                            informacion += busqueda.getNombreArchivo() + "<br>";
+                            informacion += "md5: " + busqueda.getArchivos().get(i).getMd5() + "<br>";
+                            
+                            for(int j = 0; j < busqueda.getArchivos().get(i).getNodos().size(); j++) {
+                                informacion += (busqueda.getArchivos().get(i).getNodos().get(j).getId() + "<br>");
+                            }
+                            informacion += "</body></body>";
+                            botones[i] = new JRadioButton(informacion);
+                            botones[i].addActionListener(new ActionListener(){
+                            
+                                public void actionPerformed(ActionEvent ae) {
+                                    for(short i = 0; i < botones.length; i++) {
+                                        if(ae.getSource().equals(botones[i])) {
+                                            botones[i].setSelected(true);
+                                        }
+                                        else {
+                                            botones[i].setSelected(false);
+                                        }
+                                    }
+                                    botonDescargar.setEnabled(true);
+                                }
+                            });
+                            panel.add(botones[i]);
                         }
-                    }
-                    break;
-                case FIN_ID:
-                    finalizarNodo(mensaje.getNombreOrigen());
-                    break;
-            }
+                        areaArchivos.setViewportView(panel);
+                    }                                     
+                }
+                else {
+                    adopd.enviarMensaje(busqueda, nodoAnterior.getIp(), nodoAnterior.getPuerto());   
+                }
+                break;
+            default:
         }
     }
-
-    private void finalizarNodo( String id) {
-        if(finNodo(id)) {
-            actualizarListaDeNodos();
-            if(nodos.size() > 0) {
-                nodoSiguiente = getNodoSiguiente(puerto);
-                nodoAnterior = getNodoAnterior(puerto);
-            }
-        }
-    }
-
-    private boolean inicioNodo( String id) {
+    
+    
+    private boolean esElMayor(int idNodo) {
         int tam = nodos.size();
         Nodo n;
-        for(short i = 0; i < tam; i++) {
+        for(short i = 0; i < tam ; i++) {
             n = (Nodo) nodos.get(i);
-            if(n.getId().equals(id)) {
-                n.temporalizador = 11;
-                return false;
-            }
+            if(n.getPuerto() > idNodo)
+                   return false;
         }
-
-        n = new Nodo(id, getIP(id), getPuerto(id));
-        n.temporalizador = 11;
-        nodos.add(n);
         return true;
     }
-
-    private boolean finNodo( String id) {
+    
+    private boolean esElMenor(int idNodo) {
         int tam = nodos.size();
         Nodo n;
-        for(short i = 0; i < tam; i++) {
+        for(short i = 0; i < tam ; i++) {
+            n = (Nodo) nodos.get(i);
+            if(idNodo > n.getPuerto())
+                   return false;
+        }
+        return true;
+    }
+    
+    private Nodo getNodoMenor() {
+        int tam = nodos.size();
+        Nodo n = (Nodo) nodos.get(0);
+        int menor = n.getPuerto();
+        int j = 0;
+        for (short i = 1; i < tam; i++) {
+            n = (Nodo) nodos.get(i);
+            if (n.getPuerto() < menor) {
+                menor = n.getPuerto();
+                j = i;
+            }
+        }
+        return (Nodo) nodos.get(j);
+    }
+    
+    private Nodo getNodoMayor() {
+        int tam = nodos.size();
+        Nodo n = (Nodo) nodos.get(0);
+        int mayor = n.getPuerto();
+        int j = 0;
+        for (short i = 1; i < tam; i++) {
+            n = (Nodo) nodos.get(i);
+            if (n.getPuerto() > mayor) {
+                mayor = n.getPuerto();
+                j = i;
+            }
+        }
+        return (Nodo) nodos.get(j);
+    }
+    
+    private Nodo getNodoSiguiente(int idNodoPuerto) {
+        Nodo n = null;
+        if(esElMayor(idNodoPuerto)) {
+            n = getNodoMenor();
+        }
+        else {
+            int tam = nodos.size();
+            int resta = 2147483647;
+            int aux, j = 0;
+            for (short i = 0; i < tam; i++) {
+                n = (Nodo) nodos.get(i);
+                aux = n.getPuerto() - idNodoPuerto;
+                if (aux < resta && aux > 0) {
+                    resta = aux;
+                    j = i;
+                }
+            }
+            n = (Nodo) nodos.get(j);
+        }
+        return n;   
+    }
+    
+    private Nodo getNodoAnterior(int idNodoPuerto) {
+        Nodo n = null;
+        if(esElMenor(idNodoPuerto)) {
+            n = getNodoMayor();
+        }
+        else
+        {
+            int tam = nodos.size();
+            int resta = 2147483647;
+            int aux, j = 0;
+            for (short i = 0; i < tam; i++) {
+                n = (Nodo) nodos.get(i);
+                aux =  idNodoPuerto - n.getPuerto();
+                if (aux < resta && aux > 0) {
+                    resta = aux;
+                    j = i;
+                }
+            }
+            n = (Nodo) nodos.get(j);
+        }
+        return n;
+    }
+    
+    private void actualizarListaDeNodos() {  
+        nodosDisponibles = "";
+        int tam = nodos.size();
+        Nodo n;
+        for(short i = 0; i < tam ; i++) {
+            n = (Nodo) nodos.get(i);
+            nodosDisponibles += ("<br>" + n.getId());  
+        }
+        areaConexiones.setText(nodosDisponibles);
+    }
+    
+    private boolean finNodo(String id) {
+        int tam = nodos.size();
+        Nodo n;
+        for(short i = 0; i < tam ; i++) {
             n = (Nodo) nodos.get(i);
             if(n.getId().equals(id)) {
                 nodos.remove(i);
@@ -475,184 +508,176 @@ public class Interfaz extends JFrame implements ActionListener, TransferenciaLis
         }
         return false;
     }
-
-    private void actualizarListaDeNodos() {
-        nodosDisponibles = "";
+    
+    private boolean inicioNodo(String id) {
         int tam = nodos.size();
         Nodo n;
-        
-        for(short i = 0; i < tam; i++) {
+        for(short i = 0; i < tam ; i++) {
             n = (Nodo) nodos.get(i);
-            nodosDisponibles += ("<br>" + n.getId());
+            if(n.getId().equals(id)) {
+                n.temporalizador = 11;
+                return false;
+            }
         }
-
-        areaConexiones.setText(nodosDisponibles);
+        n = new Nodo(id, getIP(id), getPuerto(id));
+        n.temporalizador = 11;
+        nodos.add(n);
+        return true;
     }
-
-    private int getPuerto( String idNodo) {
+    
+    
+    private int getPuerto(String idNodo) {
         String puerto = "";
-        char c;
+        //char c;
         int i = 0;
-        while((c = idNodo.charAt(i)) != ':') {
+        while((idNodo.charAt(i)) != ':') {
             i++;
         }
-
         puerto = idNodo.substring(i + 1);
+        
         return Integer.parseInt(puerto);
     }
-
-    private String getIP( String idNodo) {
+    
+    private String getIP(String idNodo) {
         String ip = "";
         char c;
         int i = 0;
-
         while((c = idNodo.charAt(i)) != ':') {
-            ip += c;
+            ip+=c;
             i++;
         }
-
         return ip;
     }
-
-    private void pedirDatos() {
-        puertoCad = JOptionPane.showInputDialog(Interfaz.this, "Introduce el puerto");
-
-        if (puertoCad.equals(""))
-            pedirDatos();
-        else {
-            setTitle("Practica 6: " + puertoCad);
-        }
-    }
-
-    private Nodo getNodoSiguiente( int idNodoPuerto) {
-        Nodo n = null;
-        if(esElMayor(idNodoPuerto)) {
-            n = getNodoMenor();
-        } else {
-            int tam = nodos.size();
-            int resta = 2147483647;
-            int aux, j = 0;
-
-            for(short i = 0; i < tam; i++) {
-                n = (Nodo) nodos.get(i);
-                aux = n.getPuerto() - idNodoPuerto;
-
-                if(aux < resta && aux > 0) {
-                    resta = aux;
-                    j = i;
-                }
+    
+    private void decrementarServidor() {
+        Thread hilo = new Thread() {
+            public void run() {
+                while (true) {
+                    Nodo n;
+                    for(short i = 0; i < nodos.size(); i++) {
+                        n = (Nodo) nodos.get(i);
+                        n.temporalizador--;
+                        if(n.temporalizador < 1) {
+                            finalizarNodo(n.getId());
+                            logTemporal += (n.getId() + " ha salido con error<br>");
+                            areaEstado.setText(logTemporal);
+                        }
+                    }
+                    try {
+                        TimeUnit.SECONDS.sleep(1);
+                    } catch (InterruptedException ex) {
+                        Logger.getLogger(Interfaz.class.getName()).log(Level.SEVERE, null, ex);
+                    }   
+                }      
             }
-
-            n = (Nodo) nodos.get(j);
-        }
-
-        return n;
+        };
+        hilo.start();
     }
+    
+    private void anunciar() {
+        Thread hilo = new Thread() {
+            public void run() {
+                while (true) {
+                    try {
 
-    private Nodo getNodoAnterior( int idNodoPuerto) {
-        Nodo n = null;
-        if(esElMenor(idNodoPuerto)) {
-            n = getNodoMayor();
-        } else {
-            int tam = nodos.size();
-            int resta = 2147483647;
-            int aux, j = 0;
+                        AdministradorDeOperacionesMulticast.getInstance().anunciar(nodo.getId());
+                        TimeUnit.SECONDS.sleep(5);
 
-            for(short i = 0; i < tam; i++) {
-                n = (Nodo) nodos.get(i);
-                aux = idNodoPuerto - n.getPuerto();
+                    } catch (IOException ex) {
+                        Logger.getLogger(Interfaz.class.getName()).log(Level.SEVERE, null, ex);
+                    } catch (InterruptedException ex) {
+                        Logger.getLogger(Interfaz.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                }
                 
-                if(aux < resta && aux > 0) {
-                    resta = aux;
-                    j = i;
+            }
+        };
+
+        hilo.start();
+    }
+    
+    private void actualizarListaDeNodosMulticast() {
+        Thread hilo = new Thread() {
+            public void run() {
+                while (true) {
+                    try {
+                       actualizarMulticast();
+                    } catch (IOException ex) {
+                        Logger.getLogger(Interfaz.class.getName()).log(Level.SEVERE, null, ex);
+                    }
                 }
             }
-
-            n = (Nodo) nodos.get(j);
-        }
-
-        return n;
+        };
+        hilo.start();
     }
-
-    private boolean esElMayor( int idNodo) {
-        int tam = nodos.size();
-        Nodo n;
-        for(short i = 0; i < tam; i++) {
-            n = (Nodo) nodos.get(i);
-            if(n.getPuerto() > idNodo)
-                return false;
-        }
-
-        return true;
-    }
-
-    private boolean esElMenor( int idNodo) {
-        int tam = nodos.size();
-        Nodo n;
-        for(short i = 0; i < tam; i++) {
-            n = (Nodo) nodos.get(i);
-            if(idNodo > n.getPuerto()) 
-                return false;
-        }
-
-        return true;
-    }
-
-    private Nodo getNodoMayor() {
-        int tam = nodos.size();
-        Nodo n = (Nodo) nodos.get(0);
-        int mayor = n.getPuerto();
-        int j = 0;
-
-        for(short i = 0; i < tam; i++) {
-            n = (Nodo) nodos.get(i);
-            if(n.getPuerto() > mayor) {
-                mayor = n.getPuerto();
-                j = i;
+    
+    
+    private void recibirDatagrama() {
+        Thread hilo = new Thread() {
+            public void run() {
+                while (true)  {
+                    try {
+                        actualizarDatagrama();
+                    } catch (IOException ex) {
+                        Logger.getLogger(Interfaz.class.getName()).log(Level.SEVERE, null, ex);
+                    } catch (Exception ex) {
+                        Logger.getLogger(Interfaz.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                }
             }
+        };
+        hilo.start();
+    }
+    
+    private void envio() {
+        try {
+            System.out.println("A la escucha");
+            new EnviarArchivo(puerto, this);
+        } catch (RemoteException ex) {
+            Logger.getLogger(Interfaz.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (AlreadyBoundException ex) {
+            Logger.getLogger(Interfaz.class.getName()).log(Level.SEVERE, null, ex);
         }
-
-        return (Nodo) nodos.get(j);
     }
 
-    private Nodo getNodoMenor() {
-        int tam = nodos.size();
-        Nodo n = (Nodo) nodos.get(0);
-        int menor = n.getPuerto();
-        int j = 0;
-        for(short i = 0; i < tam; i++) {
-            n = (Nodo) nodos.get(i);
-            if(n.getPuerto() < menor) {
-                menor = n.getPuerto();
-                j = i;
+    private void enviarArchivo() {
+        Thread hilo = new Thread() {
+            public void run() {
+                progreso.setValue(0);
+                envio();
             }
-        }
+        };
 
-        return (Nodo) nodos.get(j);
+        hilo.start();
     }
 
     public void mensaje(String message) {
-        
+        logTemporal += (message + "<br>");
+        areaEstado.setText(logTemporal);
+    }
+
+    public void bytesEnviados(int bytes) {
+        this.bytesEnviados += bytes;
+        this.progresoEnvio.setValue((int) (bytesEnviados * 100 / this.tamArchivoEnvio));
     }
 
     public void bytesRecibidos(int bytes) {
         this.bytesRecibidos += bytes;
-        this.progreso.setValue(((int) (bytesEnviados * 100 / this.tamArchivoRecepcion)));
+        this.progreso.setValue((int)(bytesRecibidos * 100 / tamArchivoRecepcion));
     }
 
     public void cantBytesEnviar(long bytes) {
         tamArchivoEnvio = bytes;
         logTemporal += ("Cantidad de bytes a enviar: " + bytes + "\n");
         areaEstado.setText(logTemporal);
+               
     }
 
-    public void cantBytesRecibir(long bytes) {
+    public void cantBytesRecibir(long bytes) {  
         logTemporal += ("Cantidad de bytes a recibir: " + bytes + "\n");
         areaEstado.setText(logTemporal);
         tamArchivoRecepcion = bytes;
     }
-
-    public void bytesEnviados(int bytes) {}
 
     private JPanel panelPrincipal;
     private JPanel panelSuperior;

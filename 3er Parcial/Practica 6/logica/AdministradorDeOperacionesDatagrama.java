@@ -26,7 +26,7 @@ public class AdministradorDeOperacionesDatagrama {
         DatagramPacket p = new DatagramPacket(new byte[TAM], TAM);
         datagramaSocket.receive(p);
 
-        return getBusqueda(new String (p.getData()));
+        return getBusqueda(new String (p.getData(), 0, p.getData().length));
     }
 
     public void enviarMensaje(Busqueda m, String destino, int puerto) throws IOException {

@@ -16,6 +16,7 @@ public class RecibirArchivo extends Thread {
         this.nombreArchivo = nombreArchivo;
         ruta = (carpeta + "/");
         this.listener = listener;
+        System.out.println(puerto);
     }
 
     public static void unirArchivos(int totalNodos, String nombreArchivo, String ruta) {
@@ -25,7 +26,7 @@ public class RecibirArchivo extends Thread {
             byte[] array = new byte[TAM];
             
             for(int i = 0; i < totalNodos; i++) {
-                String nombre = ruta + "(" + i + ")" + nombreArchivo;
+                String nombre = "./Carpetas/" + "(" + i + ")" + nombreArchivo;
                 FileInputStream fileInput = new FileInputStream(nombre);
                 BufferedInputStream bufferedInput =  new BufferedInputStream(fileInput);
 
@@ -47,9 +48,9 @@ public class RecibirArchivo extends Thread {
     public void run() {
         String nombreCopia = "./Carpetas/" + ruta + "(" + nodo + ")" + nombreArchivo;
         try {
-            final Transferencia lookUp = (Transferencia) Naming.lookup("//" + ip + ":" + puerto + "/transferir");
-            lookUp.inicializarDescarga(nombreArchivo, totalNodos, nodo);
-            long tam = lookUp.getTamArchivo();
+            final Transferencia look_Up = (Transferencia) Naming.lookup("//" + ip + ":" + puerto + "/transferir");
+            look_Up.inicializarDescarga(nombreArchivo, totalNodos, nodo);
+            long tam = look_Up.getTamArchivo();
             
             if(listener != null) {
                 listener.cantBytesRecibir(tam);
@@ -69,7 +70,7 @@ public class RecibirArchivo extends Thread {
                     buff = (int) cant;
                 }
 
-                array = lookUp.transferirArchivo(buff);
+                array = look_Up.transferirArchivo(buff);
                 bufferedOutput.write(array, 0, buff);
 
                 if(listener != null) {
